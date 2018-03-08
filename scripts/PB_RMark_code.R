@@ -85,3 +85,11 @@ periods_post = seq(PB_max, max(PP_only$period))
 
 mark_trmt_pre = create_trmt_hist(pre_PB_max, tags_pre, periods_pre) # create capture history before PB_max
 mark_trmt_post = create_trmt_hist(post_PB_max, tags_post, periods_post) # create capture history after PB_max
+
+# for future use
+#write.csv(mark_trmt_pre, "data/PP_capture_history_prePBmax.csv")
+#write.csv(mark_trmt_post, "data/PP_capture_history_postPBmax.csv")
+
+#---------------------------------------------------------------
+# Run MARK analyses on both data sets
+#---------------------------------------------------------------
