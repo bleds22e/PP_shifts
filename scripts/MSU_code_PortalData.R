@@ -5,10 +5,11 @@
 ### Bring in the Data
 
 library(RMark)
+#MarkViewer="open -a TextEdit" # edit to make results pop up on a Mac
 library(dplyr)
 
 # read in data
-ms <- read.table("mark_PP_EKB.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+ms <- read.table("data/mark_PP_EKB.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 ms_test <- head(ms, 200)
 
 #ms <- mark_trmt %>% filter(species == 'PP') %>% select(captures) %>% rename(ch = captures) 
@@ -31,9 +32,9 @@ ms.ddl = make.design.data(ms.pr)
 # examine the data
 # Because the output is so long, here, only the head of each 
 # piece of design data is shown
-head(ms.ddl$S)
-head(ms.ddl$p)
-head(ms.ddl$Psi)
+#head(ms.ddl$S)
+#head(ms.ddl$p)
+#head(ms.ddl$Psi)
 
 ### Build Function for Creating Models
 
