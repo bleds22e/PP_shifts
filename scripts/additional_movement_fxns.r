@@ -29,8 +29,8 @@ create_trmt_hist = function(dat, tags, prd){
       
       if (nrow(dat[tmp,]) == 0) {
         state = "0"
-        capture_history = paste(capture_history, state, sep="")}
-      else if (nrow(dat[tmp,] > 0)) {
+        capture_history = paste(capture_history, state, sep="")
+        } else {
         if (dat[tmp, 4] == 1){
           state = "A"
           capture_history = paste(capture_history, state, sep="")}
