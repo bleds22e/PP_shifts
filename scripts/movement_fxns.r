@@ -4,16 +4,16 @@
 id_unknowns = function(dat, tag_col){
   # give unique numbers to blank tags
   # note: these are 7 digit numbers, so they are longer than any other tag type
-  # note: in the Portal data, column 12 is tag, so we are looking for blank or "0" tags to rename
+  # note: in the Portal data, column 16 is tag, so we are looking for blank or "0" tags to rename
   
 unk = 1000000
 for (irow in 1:nrow(dat)){
     tag = dat[irow,tag_col]
     unk = unk + 1
-    if (tag == "") {
+    if (is.na(tag)) {
       dat[irow,tag_col] = unk
     }
-    else if (tag == "0") {
+    else if (tag == '0') {
       dat[irow,tag_col] = unk
     }}
 return(dat)
@@ -282,11 +282,12 @@ find_bad_data2 = function(dat, tags, sex_col, spp_col){
       sex_list = dat[tmp,sex_col]
       sex = sex_list[1]
       for (i in 2:length(sex_list)){  # check for consistent sex
-        if (sex_list[i] != sex) {
-         outcount = outcount + 1
-          flagged_rats[outcount,] <- c(tags[t], "sex", nrow(dat[tmp,]))
-          break
-        }}
+        if (!is.na(sex_list[i])){
+          if (sex_list[i] != sex) {
+            outcount = outcount + 1
+            flagged_rats[outcount,] <- c(tags[t], "sex", nrow(dat[tmp,]))
+            break
+        }}}
       spp_list = dat[tmp,spp_col]
       spp = spp_list[1]
       for (s in 2:length(spp_list)){  # check for consistent species
