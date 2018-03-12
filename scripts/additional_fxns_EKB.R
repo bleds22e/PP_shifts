@@ -83,3 +83,27 @@ clean_data_for_capture_histories <- function(data){
   data7 = subsetDat(data6)
   
 }
+
+run.ms = function() {
+  
+  # RMark function for Portal data
+  
+  #  Define range of models for S: survival for each stratum
+  S.stratum = list(formula =  ~ -1 + stratum)
+  
+  #  Define a null model for p
+  p.dot = list(formula =  ~ 1)
+  
+  #  Define range of models for Psi: value for each possible transition
+  #     in the Mark example for Psi is accomplished by -1+stratum:tostratum,
+  #     which nests tostratum within stratum.
+  Psi.s = list(formula =  ~ -1 + stratum:tostratum, link = "logit")
+  
+  ms.results = mark.wrapper(ms.model.list,
+                            data = ms.pr, ddl = ms.ddl,
+                            options="SIMANNEAL")
+  
+  # Return model table and list of models
+  return(ms.results)
+  
+}
