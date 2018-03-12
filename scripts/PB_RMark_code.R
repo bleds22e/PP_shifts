@@ -34,7 +34,7 @@ source("scripts/additional_fxns_EKB.r")
 # Clean the Rodent Data
 
 # make it match Sarah Supp's data to use her code
-all_EKB <- repo_data_to_Supp_data(rdat, sdat)
+all <- repo_data_to_Supp_data(rdat, sdat)
 
 # remove bad or unclear data
 all_clean <- clean_data_for_capture_histories(all)
@@ -45,7 +45,7 @@ all_clean <- clean_data_for_capture_histories(all)
 trap_count <- tdat %>% 
   group_by(period) %>% 
   summarise(count = sum(sampled))
-bad_periods <- filter(trap_count, count < 24)
+bad_periods <- filter(trap_count, count < 20) # periods that weren't fully trapped
 bad_periods <- as.list(bad_periods$period)
 
 # don't use periods with only one day of trapping
@@ -59,7 +59,7 @@ PP_only <- filter(all_clean, species == 'PP')
 #---------------------------------------------------------
 
 # get PB per plot per period
-PB <- all_clean %>% filter(species == 'PB') 
+PB <- all %>% filter(species == 'PB') 
 PB_plot_count <- PB %>% 
   select(period, Treatment_Number, plot) %>% 
   group_by(period, Treatment_Number) %>% 
@@ -87,9 +87,44 @@ mark_trmt_pre = create_trmt_hist(pre_PB_max, tags_pre, periods_pre) # create cap
 mark_trmt_post = create_trmt_hist(post_PB_max, tags_post, periods_post) # create capture history after PB_max
 
 # for future use
-#write.csv(mark_trmt_pre, "data/PP_capture_history_prePBmax.csv")
-#write.csv(mark_trmt_post, "data/PP_capture_history_postPBmax.csv")
+# write.csv(mark_trmt_pre, "data/PP_capture_history_prePBmax.csv")
+# write.csv(mark_trmt_post, "data/PP_capture_history_postPBmax.csv")
 
 #---------------------------------------------------------------
 # Run MARK analyses on both data sets
 #---------------------------------------------------------------
+
+library(RMark)
+
+# prep data for RMark
+pre_ms <- select(mark_trmt_pre, captures) %>% rename(ch = captures)
+post_ms <- select(mark_trmt_post, captures) %>% rename(ch = captures)
+first_PP <- min(pre_PB_max$period)
+
+### Before PBs Infiltrated
+
+# Process data
+ms.pr = process.data(pre_ms, begin.time = first_PP, model = "Multistrata")
+  
+# Create default design data
+ms.ddl = make.design.data(ms.pr)
+
+# Run the models and examine the output
+
+ms.results = run.ms()
+ms.summary = ms.results$S.stratum.p.dot.Psi.s
+write.csv(ms.summary$results$real, "data/MARKdata/MARKoutput_PP_prePBmax_real.csv")
+
+### After PBs Infiltrated
+
+# Process data
+ms.pr = process.data(post_ms, begin.time = PB_max, model = "Multistrata")
+
+# Create default design data
+ms.ddl = make.design.data(ms.pr)
+
+# Run the models and examine the output
+
+ms.results = run.ms()
+ms.summary = ms.results$S.stratum.p.dot.Psi.s
+write.csv(ms.summary$results$real, "data/MARKdata/MARKoutput_PP_postPBmax_real.csv")
