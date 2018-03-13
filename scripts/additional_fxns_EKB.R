@@ -99,6 +99,9 @@ run.ms = function() {
   #     which nests tostratum within stratum.
   Psi.s = list(formula =  ~ -1 + stratum:tostratum, link = "logit")
   
+  # Create model list and run assortment of models
+  ms.model.list = create.model.list("Multistrata")
+  
   ms.results = mark.wrapper(ms.model.list,
                             data = ms.pr, ddl = ms.ddl,
                             options="SIMANNEAL")
