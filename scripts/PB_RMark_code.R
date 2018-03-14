@@ -34,22 +34,19 @@ tdat <- read.csv(text = trapping, header = TRUE, stringsAsFactors = FALSE)
 
 # make it match Sarah Supp's data to use her code
 all <- repo_data_to_Supp_data(rdat, sdat)
-
-# remove bad or unclear data
-all_clean <- clean_data_for_capture_histories(all)
  
 # Find and Remove Periods with One Day of Trapping
 #   should I actually do this or just leave them in?
 
-# # summarize trapping
-# trap_count <- tdat %>% 
-#   group_by(period) %>% 
-#   summarise(count = sum(sampled))
-# bad_periods <- filter(trap_count, count < 20) # periods that weren't fully trapped
-# bad_periods <- as.list(bad_periods$period)
-# 
-# # don't use periods with only one day of trapping
-# all_clean = all_clean[-which(all_clean$period %in% bad_periods),]
+# summarize trapping
+trap_count <- tdat %>%
+  group_by(period) %>%
+  summarise(count = sum(sampled))
+bad_periods <- filter(trap_count, count < 20) # periods that weren't fully trapped
+bad_periods <- as.list(bad_periods$period)
+
+# don't use periods with only one day of trapping
+all = all[-which(all$period %in% bad_periods),]
 
 #---------------------------------------------------------
 # Figure out PB "burn in" period
@@ -70,31 +67,33 @@ PB_max <- min(PB_plot_count$period[PB_plot_count$count == 8]) #first time PBs ar
 # PPs IN THE CONTEXT OF PBs
 ############################################################
 
-no_removals <- all_clean %>% filter(Treatment_Number != 3) 
+no_removals <- all %>% filter(Treatment_Number != 3) 
 
 #----------------------------------------------------------
-# Average Number of PP Individual per Plot per Period
+# Average Number of PP Individual per Plot per Year
 #----------------------------------------------------------
 
-avg_by_prd <- no_removals %>% # count of individuals in each plot
+avg_by_year <- no_removals %>% # count of individuals in each plot
   filter(species == 'PP' | species == 'PB') %>% 
-  group_by(plot, period, species, plot_type) %>% 
+  group_by(plot, year, species, plot_type) %>% 
   summarise(count = n()) %>% 
   ungroup()
-avg_by_prd <- avg_by_prd %>% # average by treatment type per period
-  group_by(period, species, plot_type) %>%  
-  summarize(avg_indiv = mean(count))
+avg_by_year <- avg_by_year %>% # average by treatment type per year
+  group_by(year, species, plot_type) %>%  
+  summarize(avg_indiv = mean(count))      
 
-avg_by_prd$plot_type <- plyr::revalue(avg_by_prd$plot_type, c("Krat_Exclosure" = "Kangaroo Rat Exclosure"))
+# fix plot types for plotting
+avg_by_year_plotting <- avg_by_year
+avg_by_year_plotting$plot_type <- plyr::revalue(avg_by_year$plot_type, c("Krat_Exclosure" = "Kangaroo Rat Exclosure"))
 
-ggplot(avg_by_prd, aes(x = period, y = avg_indiv, color = species)) + 
+ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = species)) + 
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
-           xmin = PB_min, xmax = PB_max,
+           xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
   geom_point() +
   geom_line() +
-  facet_wrap( ~ plot_type, nrow = 2) + # need to fix facet labels
-  xlab("Period Code") +
+  facet_wrap( ~ plot_type, nrow = 2) + 
+  xlab("Year") +
   ylab("Avg. Inidividuals per Plot") +
   labs(color = "Species") +
   theme_bw()
@@ -104,26 +103,40 @@ ggplot(avg_by_prd, aes(x = period, y = avg_indiv, color = species)) +
 #-----------------------------------------------------------
 
 # get data ready to plot
-plot_avg_by_prd <- spread(avg_by_prd, plot_type, avg_indiv)
-plot_avg_by_prd <- plot_avg_by_prd[which(complete.cases(plot_avg_by_prd)),]
+avg_by_year_spread <- spread(avg_by_year, plot_type, avg_indiv)
+avg_by_year_spread <- avg_by_year_spread[which(complete.cases(avg_by_year_spread)),] 
+
+# get only the PPs
+PP_only <- avg_by_year_spread[avg_by_year_spread$species == 'PP',]
 
 # linear model along a 1:1 line
-x = plot_avg_by_prd$Control
-y = plot_avg_by_prd$Krat_Exclosure
+x = PP_only$Control
+y = PP_only$Krat_Exclosure
 against_1_to_1 = lm(y-x ~ 0)
 
 # get predicted and residuals
-plot_avg_by_prd$predicted <- predict(against_1_to_1)
-plot_avg_by_prd$residuals <- residuals(against_1_to_1)
+PP_only$predicted <- predict(against_1_to_1)
+PP_only$residuals <- residuals(against_1_to_1)
 
-plot(resid_1to1)
+plot(PP_only$residuals)
 abline(h = 0)
+
+#----------------------------------------------------------
+# Plot PP Residuals Against PB Abundance
+#----------------------------------------------------------
+
+
+
 
 
 ############################################################
 # PP POPULATION-LEVEL RATES and RMARK
 ############################################################
 
+# Clean Data
+
+# remove bad or unclear data
+all_clean <- clean_data_for_capture_histories(all)
 # select on PPs from the data and use Sarah's code to clean
 PP_only <- filter(all_clean, species == 'PP')
 
