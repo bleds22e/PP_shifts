@@ -41,6 +41,8 @@ repo_data_to_Supp_data <- function(data, species_data){
 
 clean_data_for_capture_histories <- function(data){
   
+  # Sarah Supp's code for cleaning up data 
+  
   # change some cols from factor to character class
   data$tag = as.character(data$tag)
   data$species = as.character(data$species)
