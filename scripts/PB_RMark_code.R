@@ -3,9 +3,9 @@
 # March 7, 2018
 
 # LIBRARIES and SOURCE CODE
-library(dplyr)
 library(RCurl)
 library(RMark)
+library(tidyverse)
 source("scripts/movement_fxns.r")
 source("scripts/additional_movement_fxns.r")
 source("scripts/additional_fxns_EKB.r")
@@ -37,21 +37,19 @@ all <- repo_data_to_Supp_data(rdat, sdat)
 
 # remove bad or unclear data
 all_clean <- clean_data_for_capture_histories(all)
-
+ 
 # Find and Remove Periods with One Day of Trapping
+#   should I actually do this or just leave them in?
 
-# summarize trapping
-trap_count <- tdat %>% 
-  group_by(period) %>% 
-  summarise(count = sum(sampled))
-bad_periods <- filter(trap_count, count < 20) # periods that weren't fully trapped
-bad_periods <- as.list(bad_periods$period)
-
-# don't use periods with only one day of trapping
-all_clean = all_clean[-which(all_clean$period %in% bad_periods),]
-
-# select on PPs from the data and use Sarah's code to clean
-PP_only <- filter(all_clean, species == 'PP')
+# # summarize trapping
+# trap_count <- tdat %>% 
+#   group_by(period) %>% 
+#   summarise(count = sum(sampled))
+# bad_periods <- filter(trap_count, count < 20) # periods that weren't fully trapped
+# bad_periods <- as.list(bad_periods$period)
+# 
+# # don't use periods with only one day of trapping
+# all_clean = all_clean[-which(all_clean$period %in% bad_periods),]
 
 #---------------------------------------------------------
 # Figure out PB "burn in" period
@@ -62,7 +60,7 @@ PB <- all %>% filter(species == 'PB')
 PB_plot_count <- PB %>% 
   select(period, Treatment_Number, plot) %>% 
   group_by(period, Treatment_Number) %>% 
-  summarise(count = n_distinct(plot))
+  summarise(count = n())
 
 PB_min <- min(PB$period) # when PB first show up
 PB_max <- min(PB_plot_count$period[PB_plot_count$count == 8]) #first time PBs are found in all 8 krat exclosures
@@ -72,11 +70,62 @@ PB_max <- min(PB_plot_count$period[PB_plot_count$count == 8]) #first time PBs ar
 # PPs IN THE CONTEXT OF PBs
 ############################################################
 
+no_removals <- all_clean %>% filter(Treatment_Number != 3) 
+
+#----------------------------------------------------------
+# Average Number of PP Individual per Plot per Period
+#----------------------------------------------------------
+
+avg_by_prd <- no_removals %>% # count of individuals in each plot
+  filter(species == 'PP' | species == 'PB') %>% 
+  group_by(plot, period, species, plot_type) %>% 
+  summarise(count = n()) %>% 
+  ungroup()
+avg_by_prd <- avg_by_prd %>% # average by treatment type per period
+  group_by(period, species, plot_type) %>%  
+  summarize(avg_indiv = mean(count))
+
+avg_by_prd$plot_type <- plyr::revalue(avg_by_prd$plot_type, c("Krat_Exclosure" = "Kangaroo Rat Exclosure"))
+
+ggplot(avg_by_prd, aes(x = period, y = avg_indiv, color = species)) + 
+  annotate(geom = "rect", fill = "grey", alpha = 0.4,
+           xmin = PB_min, xmax = PB_max,
+           ymin = -Inf, ymax = Inf) +
+  geom_point() +
+  geom_line() +
+  facet_wrap( ~ plot_type, nrow = 2) + # need to fix facet labels
+  xlab("Period Code") +
+  ylab("Avg. Inidividuals per Plot") +
+  labs(color = "Species") +
+  theme_bw()
+
+#-----------------------------------------------------------
+# Residuals Against the 1:1 line
+#-----------------------------------------------------------
+
+# get data ready to plot
+plot_avg_by_prd <- spread(avg_by_prd, plot_type, avg_indiv)
+plot_avg_by_prd <- plot_avg_by_prd[which(complete.cases(plot_avg_by_prd)),]
+
+# linear model along a 1:1 line
+x = plot_avg_by_prd$Control
+y = plot_avg_by_prd$Krat_Exclosure
+against_1_to_1 = lm(y-x ~ 0)
+
+# get predicted and residuals
+plot_avg_by_prd$predicted <- predict(against_1_to_1)
+plot_avg_by_prd$residuals <- residuals(against_1_to_1)
+
+plot(resid_1to1)
+abline(h = 0)
 
 
 ############################################################
 # PP POPULATION-LEVEL RATES and RMARK
 ############################################################
+
+# select on PPs from the data and use Sarah's code to clean
+PP_only <- filter(all_clean, species == 'PP')
 
 #-----------------------------------------------------------
 # Create Capture Histories
