@@ -1,10 +1,14 @@
-# Run MARK on different chunks of time
+# Get Population Level PP Data
 # EKB, code modified from S. Supp and RMark examples
 # March 7, 2018
 
-# LIBRARIES
+# LIBRARIES and SOURCE CODE
 library(dplyr)
 library(RCurl)
+library(RMark)
+source("scripts/movement_fxns.r")
+source("scripts/additional_movement_fxns.r")
+source("scripts/additional_fxns_EKB.r")
 
 # DATA FILES
 
@@ -25,11 +29,6 @@ tdat <- read.csv(text = trapping, header = TRUE, stringsAsFactors = FALSE)
 #---------------------------------------------------------
 
 # mostly taken from Sarah's rodent_data.r
-
-# call sources
-source("scripts/movement_fxns.r")
-source("scripts/additional_movement_fxns.r")
-source("scripts/additional_fxns_EKB.r")
 
 # Clean the Rodent Data
 
@@ -68,6 +67,17 @@ PB_plot_count <- PB %>%
 PB_min <- min(PB$period) # when PB first show up
 PB_max <- min(PB_plot_count$period[PB_plot_count$count == 8]) #first time PBs are found in all 8 krat exclosures
 
+
+############################################################
+# PPs IN THE CONTEXT OF PBs
+############################################################
+
+
+
+############################################################
+# PP POPULATION-LEVEL RATES and RMARK
+############################################################
+
 #-----------------------------------------------------------
 # Create Capture Histories
 #-----------------------------------------------------------
@@ -93,8 +103,6 @@ mark_trmt_post = create_trmt_hist(post_PB_max, tags_post, periods_post) # create
 #---------------------------------------------------------------
 # Run MARK analyses on both data sets
 #---------------------------------------------------------------
-
-library(RMark)
 
 # load in capture histories if already obtained
 #mark_trmt_pre <- read.csv("data/MARKdata/PP_capture_history_prePBmax.csv", header = TRUE, stringsAsFactors = FALSE)
@@ -132,3 +140,13 @@ ms.ddl = make.design.data(ms.pr)
 ms.results = run.ms()
 ms.summary = ms.results$S.stratum.p.dot.Psi.s
 write.csv(ms.summary$results$real, "data/MARKdata/MARKoutput_PP_postPBmax_real.csv")
+
+#------------------------------------------------------------
+# Number of New PP Individuals Showing Up on Plots
+#------------------------------------------------------------
+
+
+
+#############################################################
+# PP BIOMASS CALCULATIONS
+#############################################################
