@@ -15,6 +15,7 @@ repo_data_to_Supp_data <- function(data, species_data){
   data$Treatment_Number = NA
   data$east = NA
   data$north = NA
+  data$plot_type = NA
   
   # remove unneeded columns
   data <- select(data, -recordID, -day, -note1, -age, -testes, -lactation, -hfl, 
@@ -24,18 +25,23 @@ repo_data_to_Supp_data <- function(data, species_data){
   data <- data[, c("year", "month", "period", "Treatment_Number", 
                    "plot", "stake", "east", "north", "species", "sex", 
                    "reprod", "vagina", "nipples", "pregnant", "wgt",
-                   "tag", "note2", "ltag", "note3", "note5")]
+                   "tag", "note2", "ltag", "note3", "note5", "plot_type")]
   
   for (i in 1:length(data$period)){
     if (data$plot[i] %in% c(1, 2, 4, 8, 9, 11, 12, 14, 17, 22)){
       data$Treatment_Number[i] = 1
+      data$plot_type[i] = 'Control'
     } else if (data$plot[i] %in% c(3, 6, 13, 15, 18, 19, 20, 21 )){
       data$Treatment_Number[i] = 2
+      data$plot_type[i] = 'Krat_Exclosure'
     } else {
       data$Treatment_Number[i] = 3 # 5, 7, 10, 16, 23, 24
+      data$plot_type[i] = 'Removal'
     }
   }
+  
   return(data)
+  
 }
 
 
