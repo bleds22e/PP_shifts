@@ -132,7 +132,7 @@ PP_linear_model <- bind_cols(year, PP_predicted, PP_residuals)
 colnames(PP_linear_model) <- c("year", "PP_predicted", "PP_residuals")
 
 # check that the residuals look correct
-plot(PP_only$residuals)
+plot(PP_linear_model$PP_residuals)
 abline(h = 0)
 
 #----------------------------------------------------------
@@ -182,7 +182,7 @@ PP_and_PB_fulljoin <- full_join(PP_linear_model, PB_avg_year, by = "year")
 PP_and_PB_fulljoin[is.na(PP_and_PB_fulljoin)] <- 0 # to line up PB abundance for plotting
 
 # PP residuals through time
-(plot2 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = residuals)) +
+(plot2 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PP_residuals)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
