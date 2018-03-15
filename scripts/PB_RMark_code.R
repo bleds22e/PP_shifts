@@ -10,6 +10,8 @@ library(gridExtra)
 source("scripts/movement_fxns.r")
 source("scripts/additional_movement_fxns.r")
 source("scripts/additional_fxns_EKB.r")
+# colorblind palette for plotting
+cbbPalette <- c("#E69F00", "#56B4E9", "#009E73","#CC79A7")
 
 # DATA FILES
 
@@ -95,6 +97,7 @@ ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = species)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
+  scale_color_manual(values = cbbPalette) +
   geom_point() +
   geom_line() +
   facet_wrap( ~ plot_type, nrow = 2) + 
@@ -151,12 +154,20 @@ summary(PP_PB_model)
 
 ggplot(data = PP_and_PB_innerjoin, aes(x = PB_avg_indiv, y = PP_residuals)) +
   geom_hline(aes(yintercept = 0), color = 'black')+
-  geom_point(size = 2) + 
+  stat_smooth(method = 'lm', formula = y ~ x + I(x^2), size = 2) +
+  geom_point(size = 3) + 
   xlab("Average PB Individuals per Plot per Year") +
   ylab("Residuals Against the 1:1 Line for PP") +
-  stat_smooth(method = 'lm', formula = y ~ x + I(x^2)) +
-  theme_bw()
+  labs(title = "y = 0.0008x^2 - 0.3026x + 10.3314, Adj. R2 = 0.696, n = 21, p = 0.8.686e-06") +
+  theme_bw()+
+  theme(plot.title = element_text(face = "italic", colour = "dark grey", size = 14, hjust = 0.5),
+        axis.title.x = element_text(face = "bold", size = 14),
+        axis.title.y = element_text(face = "bold", size = 14))
+#ggsave("figures/PP_residuals_PB_abund.png", width = 7.5, height = 7)
 
+#-----------------------------------------------------------
+# Plot PP Residuals and PP Abundance Through Time
+#-----------------------------------------------------------
 
 
 
