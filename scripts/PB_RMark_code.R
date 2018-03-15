@@ -6,6 +6,7 @@
 library(RCurl)
 library(RMark)
 library(tidyverse)
+library(gridExtra)
 source("scripts/movement_fxns.r")
 source("scripts/additional_movement_fxns.r")
 source("scripts/additional_fxns_EKB.r")
@@ -23,6 +24,10 @@ sdat <- read.csv(text = species, header = TRUE, na.strings = c(""))
 # trapping file from repo
 trapping <- getURL("https://raw.githubusercontent.com/weecology/PortalData/master/Rodents/Portal_rodent_trapping.csv")
 tdat <- read.csv(text = trapping, header = TRUE, stringsAsFactors = FALSE)
+
+##########################################################
+# DATA PREP
+##########################################################
 
 #---------------------------------------------------------
 # Clean the Data 
@@ -114,10 +119,16 @@ x = PP_only$Control
 y = PP_only$Krat_Exclosure
 against_1_to_1 = lm(y-x ~ 0)
 
-# get predicted and residuals
-PP_only$predicted <- predict(against_1_to_1)
-PP_only$residuals <- residuals(against_1_to_1)
+# make new data frame with predicted and residuals
 
+year <- as.data.frame(unique(avg_by_year_spread$year))
+PP_predicted <- as.data.frame(predict(against_1_to_1))
+PP_residuals <- as.data.frame(residuals(against_1_to_1))
+
+PP_linear_model <- bind_cols(year, PP_predicted, PP_residuals)
+colnames(PP_linear_model) <- c("year", "PP_predicted", "PP_residuals")
+
+# check that the residuals look correct
 plot(PP_only$residuals)
 abline(h = 0)
 
@@ -125,6 +136,26 @@ abline(h = 0)
 # Plot PP Residuals Against PB Abundance
 #----------------------------------------------------------
 
+# get PB abundance
+PB_avg_year <- select(avg_by_year, year, species, avg_indiv) %>%
+  group_by(year) %>% 
+  filter(species == 'PB') %>% 
+  select(-species) %>% 
+  summarise(PB_avg_indiv = sum(avg_indiv))
+PP_and_PB_innerjoin <- inner_join(PB_avg_year, PP_linear_model, by = "year")
+
+x = PP_and_PB_innerjoin$PB_avg_indiv
+y = PP_and_PB_innerjoin$PP_residuals
+PP_PB_model <- lm(formula = y ~ x + I(x^2))
+summary(PP_PB_model)
+
+ggplot(data = PP_and_PB_innerjoin, aes(x = PB_avg_indiv, y = PP_residuals)) +
+  geom_hline(aes(yintercept = 0), color = 'black')+
+  geom_point(size = 2) + 
+  xlab("Average PB Individuals per Plot per Year") +
+  ylab("Residuals Against the 1:1 Line for PP") +
+  stat_smooth(method = 'lm', formula = y ~ x + I(x^2)) +
+  theme_bw()
 
 
 
