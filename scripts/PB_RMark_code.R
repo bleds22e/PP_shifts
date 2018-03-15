@@ -145,41 +145,82 @@ PB_avg_year <- select(avg_by_year, year, species, avg_indiv) %>%
   filter(species == 'PB') %>% 
   select(-species) %>% 
   summarise(PB_avg_indiv = sum(avg_indiv))
+# remove years where no PBs are present
 PP_and_PB_innerjoin <- inner_join(PB_avg_year, PP_linear_model, by = "year")
 
+# define x and y for the polynomial model
 x = PP_and_PB_innerjoin$PB_avg_indiv
 y = PP_and_PB_innerjoin$PP_residuals
+
+# quadratic model 
 PP_PB_model <- lm(formula = y ~ x + I(x^2))
 summary(PP_PB_model)
 
-ggplot(data = PP_and_PB_innerjoin, aes(x = PB_avg_indiv, y = PP_residuals)) +
+# plot the regression
+(plot1 <- ggplot(data = PP_and_PB_innerjoin, aes(x = PB_avg_indiv, y = PP_residuals)) +
   geom_hline(aes(yintercept = 0), color = 'black')+
-  stat_smooth(method = 'lm', formula = y ~ x + I(x^2), size = 2) +
+  stat_smooth(method = 'lm', formula = y ~ x + I(x^2), size = 2) + # quadratic smoothing
   geom_point(size = 3) + 
-  xlab("Average PB Individuals per Plot per Year") +
+  xlab("PB Avg. Individuals per Plot by Year") +
   ylab("Residuals Against the 1:1 Line for PP") +
+  # data for "title" is from the summary  of PP_PB_model; too lazy to write function
   labs(title = "y = 0.0008x^2 - 0.3026x + 10.3314, Adj. R2 = 0.696, n = 21, p = 0.8.686e-06") +
   theme_bw()+
   theme(plot.title = element_text(face = "italic", colour = "dark grey", size = 14, hjust = 0.5),
         axis.title.x = element_text(face = "bold", size = 14),
-        axis.title.y = element_text(face = "bold", size = 14))
-#ggsave("figures/PP_residuals_PB_abund.png", width = 7.5, height = 7)
+        axis.title.y = element_text(face = "bold", size = 14),
+        axis.text.x = element_text(face = "bold", size = 12),
+        axis.text.y = element_text(face = "bold", size = 12)))
+#ggsave("figures/PP_residuals_PB_abund.png", plot1, width = 8.5, height = 8)
 
 #-----------------------------------------------------------
 # Plot PP Residuals and PP Abundance Through Time
 #-----------------------------------------------------------
 
+# get all years in which PPs are present
+PP_and_PB_fulljoin <- full_join(PP_linear_model, PB_avg_year, by = "year")
+PP_and_PB_fulljoin[is.na(PP_and_PB_fulljoin)] <- 0 # to line up PB abundance for plotting
+
+# PP residuals through time
+(plot2 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = residuals)) +
+  annotate(geom = "rect", fill = "grey", alpha = 0.4,
+           xmin = 1995, xmax = 1998,
+           ymin = -Inf, ymax = Inf) +
+  geom_hline(aes(yintercept = 0), color = 'red')+
+  geom_point(size = 3)+
+  xlab("Year") +
+  ylab("Residuals Against the 1:1 Line for PP") +
+  theme_bw() +
+  theme(axis.title.x = element_text(face = "bold", size = 14),
+        axis.title.y = element_text(face = "bold", size = 14),
+        axis.text.x = element_text(face = "bold", size = 12),
+        axis.text.y = element_text(face = "bold", size = 12)))
+
+# Average PB individuals through time
+(plot3 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PB_avg_indiv)) +
+  annotate(geom = "rect", fill = "grey", alpha = 0.4, 
+           xmin = 1995, xmax = 1998, 
+           ymin = -Inf, ymax = Inf) +  
+  geom_point(size = 3) +
+  geom_line() +
+  xlab("Year") +
+  ylab("PB Avg. Individuals per Plot") +
+  theme_bw() +
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_text(face = "bold", size = 14),
+        axis.text.x = element_text(face = "bold", size = 12),
+        axis.text.y = element_text(face = "bold", size = 12)))
+
+plot4 <- grid.arrange(plot3, plot2, nrow = 2)
+#ggsave("figures/PP_resid_PB_avg.png", plot = plot4, width = 8.5, height = 8)
 
 
 ############################################################
 # PP POPULATION-LEVEL RATES and RMARK
 ############################################################
 
-# Clean Data
-
-# remove bad or unclear data
-all_clean <- clean_data_for_capture_histories(all)
 # select on PPs from the data and use Sarah's code to clean
+all_clean <- clean_data_for_capture_histories(all)
 PP_only <- filter(all_clean, species == 'PP')
 
 #-----------------------------------------------------------
@@ -200,7 +241,7 @@ periods_post = seq(PB_max, max(PP_only$period))
 mark_trmt_pre = create_trmt_hist(pre_PB_max, tags_pre, periods_pre) # create capture history before PB_max
 mark_trmt_post = create_trmt_hist(post_PB_max, tags_post, periods_post) # create capture history after PB_max
 
-# for future use
+# for future use:
 # write.csv(mark_trmt_pre, "data/PP_capture_history_prePBmax.csv")
 # write.csv(mark_trmt_post, "data/PP_capture_history_postPBmax.csv")
 
