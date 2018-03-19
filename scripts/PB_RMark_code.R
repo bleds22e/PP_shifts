@@ -163,7 +163,8 @@ summary(PP_PB_model)
   geom_point(size = 3) + 
   xlab("PB Avg. Individuals per Plot by Year") +
   ylab("Residuals Against the 1:1 Line for PP") +
-  # data for "title" is from the summary  of PP_PB_model; too lazy to write function
+  # data for "title" is from the summary  of PP_PB_model
+  #   will need to update manually if data changes
   labs(title = "y = 0.0008x^2 - 0.3026x + 10.3314, Adj. R2 = 0.696, n = 21, p = 0.8.686e-06") +
   theme_bw()+
   theme(plot.title = element_text(face = "italic", colour = "dark grey", size = 14, hjust = 0.5),
@@ -290,8 +291,9 @@ write.csv(ms.summary$results$real, "data/MARKdata/MARKoutput_PP_postPBmax_real.c
 # Number of New PP Individuals Showing Up on Plots
 #------------------------------------------------------------
 
-
+# number new per treatment per year?
 
 #############################################################
 # PP BIOMASS CALCULATIONS
 #############################################################
+
