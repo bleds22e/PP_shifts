@@ -268,8 +268,8 @@ mark_trmt_all = create_trmt_hist(PP_only, tags_all, periods_all) # create one gi
 #---------------------------------------------------------------
 
 # load in capture histories if already obtained
-#mark_trmt_pre <- read.csv("data/MARKdata/PP_capture_history_prePBmax.csv", header = TRUE, stringsAsFactors = FALSE)
-#mark_trmt_post <- read.csv("data/MARKdata/PP_capture_history_postPBmax.csv", header = TRUE, stringsAsFactors = FALSE)
+mark_trmt_pre <- read.csv("data/MARKdata/PP_capture_history_prePBmax.csv", header = TRUE, stringsAsFactors = FALSE)
+mark_trmt_post <- read.csv("data/MARKdata/PP_capture_history_postPBmax.csv", header = TRUE, stringsAsFactors = FALSE)
 
 # prep data for RMark
 pre_ms <- select(mark_trmt_pre, captures) %>% rename(ch = captures)
