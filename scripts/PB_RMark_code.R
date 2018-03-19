@@ -3,6 +3,13 @@
 # March 7, 2018
 
 # LIBRARIES and SOURCE CODE
+
+# install portalr if not already done
+#library(devtools)
+#install_github("weecology/portalr")
+
+# libraries
+library(portalr)
 library(RCurl)
 library(RMark)
 library(tidyverse)
@@ -10,6 +17,7 @@ library(gridExtra)
 source("scripts/movement_fxns.r")
 source("scripts/additional_movement_fxns.r")
 source("scripts/additional_fxns_EKB.r")
+
 # colorblind palette for plotting
 cbbPalette <- c("#E69F00", "#56B4E9", "#009E73","#CC79A7")
 
@@ -27,6 +35,8 @@ sdat <- read.csv(text = species, header = TRUE, na.strings = c(""))
 trapping <- getURL("https://raw.githubusercontent.com/weecology/PortalData/master/Rodents/Portal_rodent_trapping.csv")
 tdat <- read.csv(text = trapping, header = TRUE, stringsAsFactors = FALSE)
 
+
+
 ##########################################################
 # DATA PREP
 ##########################################################
@@ -39,7 +49,7 @@ tdat <- read.csv(text = trapping, header = TRUE, stringsAsFactors = FALSE)
 
 # Clean the Rodent Data
 
-# make it match Sarah Supp's data to use her code
+# make it match Sarah Supp's data structure to use her code
 all <- repo_data_to_Supp_data(rdat, sdat)
  
 # Find and Remove Periods with One Day of Trapping
@@ -68,6 +78,7 @@ PB_plot_count <- PB %>%
 
 PB_min <- min(PB$period) # when PB first show up
 PB_max <- min(PB_plot_count$period[PB_plot_count$count == 8]) #first time PBs are found in all 8 krat exclosures
+
 
 
 ############################################################
@@ -167,12 +178,13 @@ summary(PP_PB_model)
   #   will need to update manually if data changes
   labs(title = "y = 0.0008x^2 - 0.3026x + 10.3314, Adj. R2 = 0.696, n = 21, p = 0.8.686e-06") +
   theme_bw()+
-  theme(plot.title = element_text(face = "italic", colour = "dark grey", size = 14, hjust = 0.5),
+  theme(panel.border = element_rect(fill = NA, colour = "black"),
+        plot.title = element_text(face = "italic", colour = "dark grey", size = 14, hjust = 0.5),
         axis.title.x = element_text(face = "bold", size = 14),
         axis.title.y = element_text(face = "bold", size = 14),
         axis.text.x = element_text(face = "bold", size = 12),
         axis.text.y = element_text(face = "bold", size = 12)))
-#ggsave("figures/PP_residuals_PB_abund.png", plot1, width = 8.5, height = 8)
+#ggsave("figures/PP_residuals_PB_abund_classic.png", plot1, width = 8.5, height = 8)
 
 #-----------------------------------------------------------
 # Plot PP Residuals and PP Abundance Through Time
@@ -192,8 +204,9 @@ PP_and_PB_fulljoin[is.na(PP_and_PB_fulljoin)] <- 0 # to line up PB abundance for
   xlab("Year") +
   ylab("Residuals Against the 1:1 Line for PP") +
   theme_bw() +
-  theme(axis.title.x = element_text(face = "bold", size = 14),
-        axis.title.y = element_text(face = "bold", size = 14),
+  theme(panel.border = element_rect(fill = NA, colour = "black"),
+        axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
+        axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
         axis.text.x = element_text(face = "bold", size = 12),
         axis.text.y = element_text(face = "bold", size = 12)))
 
@@ -207,13 +220,15 @@ PP_and_PB_fulljoin[is.na(PP_and_PB_fulljoin)] <- 0 # to line up PB abundance for
   xlab("Year") +
   ylab("PB Avg. Individuals per Plot") +
   theme_bw() +
-  theme(axis.title.x = element_blank(),
-        axis.title.y = element_text(face = "bold", size = 14),
+  theme(panel.border = element_rect(fill = NA, colour = "black"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
         axis.text.x = element_text(face = "bold", size = 12),
         axis.text.y = element_text(face = "bold", size = 12)))
 
 plot4 <- grid.arrange(plot3, plot2, nrow = 2)
 #ggsave("figures/PP_resid_PB_avg.png", plot = plot4, width = 8.5, height = 8)
+
 
 
 ############################################################
@@ -292,8 +307,88 @@ write.csv(ms.summary$results$real, "data/MARKdata/MARKoutput_PP_postPBmax_real.c
 #------------------------------------------------------------
 
 # number new per treatment per year?
+# can I just use note2?
+
+
 
 #############################################################
 # PP BIOMASS CALCULATIONS
 #############################################################
 
+# BIOMASS
+
+# download biomass data by plot from portalr
+biomass_data <- portalr:::get_rodent_data(path = "repo", level = "Plot", output = "biomass")
+
+# select certain treatments and filter by time
+biomass_dat <- biomass_data %>% 
+  filter(treatment == "control" | treatment == "exclosure", period >= 118 & period < 436) # get the right time periods
+
+# add a year column for later summarization
+year_prd_pairs <- unique(tdat[,c("year", "period")]) # get associated years and periods
+biomass_dat$year = NA
+
+for (i in 1:nrow(biomass_dat)){
+  prd <- biomass_dat$period[i]
+  biomass_dat$year[i] = year_prd_pairs$year[year_prd_pairs$period == prd]
+}
+
+#------------------------------------------------------------
+# Biomass Against the 1:1 line
+#------------------------------------------------------------
+
+# sum across rows and rename column
+biomass_dat_rowSums <- as.data.frame(rowSums(biomass_dat[,4:24])) 
+colnames(biomass_dat_rowSums) <- c("rowSums") 
+
+# summarise biomass to get total by period and plot type
+biomass_total <- cbind(biomass_dat, biomass_dat_rowSums) %>% 
+  group_by(year, treatment) %>% 
+  summarise(totals = sum(rowSums))
+
+# plot total biomass through time by plot types
+ggplot(biomass_total, aes(x = year, y = totals)) +
+  geom_line(aes(color = treatment)) +
+  xlab("Period") +
+  ylab("Total Rodent biomass") +
+  theme_bw()
+#ggsave("figures/total_biomass_by_plot.png")
+
+# change the data structure to run the linear model
+biomass_spread <- tidyr::spread(biomass_total, treatment, totals)
+
+# run linear model against the 1:1 line
+model_1to1 <- lm((biomass_spread$exclosure - biomass_spread$control) ~ 0)
+biomass_spread$residuals <- residuals(model_1to1)
+plot(x = biomass_spread$year, y = biomass_spread$residuals)
+
+ggplot(biomass_spread, aes(x = year, y = residuals)) +
+  annotate(geom = "rect", fill = "grey", alpha = 0.4,
+           xmin = 1995, xmax = 1998,
+           ymin = -Inf, ymax = Inf) +
+  geom_point() +
+  stat_smooth(method = 'lm', formula = y ~ x + I(x^2)) +
+  theme_bw()
+
+#------------------------------------------------------------
+# Biomass Ratios
+#------------------------------------------------------------
+
+# ratio
+biomass_ratio <- biomass_spread %>% mutate(EX_to_CO_ratio = exclosure/control)
+
+(plot5 <- ggplot(biomass_ratio, aes(year, EX_to_CO_ratio))+
+  annotate(geom = "rect", fill = "grey", alpha = 0.4,
+           xmin = 1995, xmax = 1998,
+           ymin = -Inf, ymax = Inf) +
+  geom_point(size = 3) +
+  geom_line()+
+  xlab("Year") +
+  ylab("Kangaroo Rat Exlcosure:Control Biomass") +
+  theme_bw() +
+  theme(panel.border = element_rect(fill = NA, colour = "black"),
+        axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
+        axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
+        axis.text.x = element_text(face = "bold", size = 12),
+        axis.text.y = element_text(face = "bold", size = 12)))
+ggsave("figures/biomass_ratio.png", plot5, width = 8.5, height = 8)  
