@@ -45,10 +45,6 @@ tdat <- read.csv(text = trapping, header = TRUE, stringsAsFactors = FALSE)
 # Clean the Data 
 #---------------------------------------------------------
 
-# mostly taken from Sarah's rodent_data.r
-
-# Clean the Rodent Data
-
 # make it match Sarah Supp's data structure to use her code
 all <- repo_data_to_Supp_data(rdat, sdat)
  
@@ -63,7 +59,7 @@ bad_periods <- filter(trap_count, count < 20) # periods that weren't fully trapp
 bad_periods <- as.list(bad_periods$period)
 
 # don't use periods with only one day of trapping
-all = all[-which(all$period %in% bad_periods),]
+all_no_incomplete = all[-which(all$period %in% bad_periods),] # need to change this;
 
 #---------------------------------------------------------
 # Figure out PB "burn in" period
@@ -74,18 +70,20 @@ PB <- all %>% filter(species == 'PB')
 PB_plot_count <- PB %>% 
   select(period, Treatment_Number, plot) %>% 
   group_by(period, Treatment_Number) %>% 
-  summarise(count = n())
+  summarise(count = n_distinct(plot))
 
 PB_min <- min(PB$period) # when PB first show up
 PB_max <- min(PB_plot_count$period[PB_plot_count$count == 8]) #first time PBs are found in all 8 krat exclosures
 
-
+# PB decline?
+# 2008 (prd 366) = last time caught in all 8 krat exclosures
+# 2010 (prd 388) = first time not caught during a survey since PB_max
 
 ############################################################
 # PPs IN THE CONTEXT OF PBs
 ############################################################
 
-no_removals <- all %>% filter(Treatment_Number != 3) 
+no_removals <- all_no_incomplete %>% filter(Treatment_Number != 3) 
 
 #----------------------------------------------------------
 # Average Number of PP Individual per Plot per Year
@@ -250,24 +248,28 @@ post_PB_max <- PP_only[(PP_only$period >= PB_max),]
 ### Create a set of capture histories by treatment and by plot
 tags_pre = unique(pre_PB_max$tag) 
 tags_post = unique(post_PB_max$tag)
+tags_all = unique(PP_only$tag)
 
 periods_pre = seq(min(PP_only$period),(PB_max-1)) # include all periods, even those with no PPs
 periods_post = seq(PB_max, max(PP_only$period))
+periods_all = seq(min(PP_only$period), max(PP_only$period))
 
 mark_trmt_pre = create_trmt_hist(pre_PB_max, tags_pre, periods_pre) # create capture history before PB_max
 mark_trmt_post = create_trmt_hist(post_PB_max, tags_post, periods_post) # create capture history after PB_max
+mark_trmt_all = create_trmt_hist(PP_only, tags_all, periods_all) # create one giant capture history
 
 # for future use:
 # write.csv(mark_trmt_pre, "data/PP_capture_history_prePBmax.csv")
 # write.csv(mark_trmt_post, "data/PP_capture_history_postPBmax.csv")
+# write.csv(mark_trmt_all, "data/PP_capture_history_all.csv")
 
 #---------------------------------------------------------------
 # Run MARK analyses on both data sets
 #---------------------------------------------------------------
 
 # load in capture histories if already obtained
-#mark_trmt_pre <- read.csv("data/MARKdata/PP_capture_history_prePBmax.csv", header = TRUE, stringsAsFactors = FALSE)
-#mark_trmt_post <- read.csv("data/MARKdata/PP_capture_history_postPBmax.csv", header = TRUE, stringsAsFactors = FALSE)
+mark_trmt_pre <- read.csv("data/MARKdata/PP_capture_history_prePBmax.csv", header = TRUE, stringsAsFactors = FALSE)
+mark_trmt_post <- read.csv("data/MARKdata/PP_capture_history_postPBmax.csv", header = TRUE, stringsAsFactors = FALSE)
 
 # prep data for RMark
 pre_ms <- select(mark_trmt_pre, captures) %>% rename(ch = captures)
@@ -346,14 +348,6 @@ biomass_total <- cbind(biomass_dat, biomass_dat_rowSums) %>%
   group_by(year, treatment) %>% 
   summarise(totals = sum(rowSums))
 
-# plot total biomass through time by plot types
-ggplot(biomass_total, aes(x = year, y = totals)) +
-  geom_line(aes(color = treatment)) +
-  xlab("Period") +
-  ylab("Total Rodent biomass") +
-  theme_bw()
-#ggsave("figures/total_biomass_by_plot.png")
-
 # change the data structure to run the linear model
 biomass_spread <- tidyr::spread(biomass_total, treatment, totals)
 
@@ -381,6 +375,9 @@ biomass_ratio <- biomass_spread %>% mutate(EX_to_CO_ratio = exclosure/control)
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
+    annotate(geom = "rect", fill = "grey", alpha = 0.4,
+             xmin = 2008, xmax = 2010, # 2008 is the last time PBs were on 8 krat exclosure plots (366); 2010 first time not caught in a census
+             ymin = -Inf, ymax = Inf) +
   geom_point(size = 3) +
   geom_line()+
   xlab("Year") +
@@ -391,4 +388,4 @@ biomass_ratio <- biomass_spread %>% mutate(EX_to_CO_ratio = exclosure/control)
         axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
         axis.text.x = element_text(face = "bold", size = 12),
         axis.text.y = element_text(face = "bold", size = 12)))
-ggsave("figures/biomass_ratio.png", plot5, width = 8.5, height = 8)  
+#ggsave("figures/biomass_ratio.png", plot5, width = 8.5, height = 8)  
