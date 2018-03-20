@@ -308,10 +308,46 @@ write.csv(ms.summary$results$real, "data/MARKdata/MARKoutput_PP_postPBmax_real.c
 # Number of New PP Individuals Showing Up on Plots
 #------------------------------------------------------------
 
-# number new per treatment per year?
-# can I just use note2?
+# Sarah's code _should_ go through everything, so each should be a unique tag
+#   - should ultimately check that Sarah's code does what we hope it does
+#   - `testthat` ? lol
+# I think every new/different animal gets a different tag
+# so just need to find the first period each tag is caught
 
+# make empty dataframe
+first_period <- setNames(data.frame(matrix(ncol = 21, nrow = 0)), names(PP_only))
 
+# create dataframe of only first period each tag is present
+for (i in 1:length(tags_all)){
+  tmp <- PP_only[PP_only$tag == tags_all[i],] # rows for a given tag
+  tmp2 <- tmp[tmp$period == min(tmp$period),] # row with earliest period 
+  first_period <- rbind(first_period, tmp2)   # add to new dataframe
+}
+
+# total number new PPs per year
+new_PP_per_plot <- first_period %>% 
+  filter(plot_type != "Removal") %>% 
+  group_by(year, plot_type) %>% 
+  summarise(count = n())
+new_PP_per_plot$plot_type <- plyr::revalue(new_PP_per_plot$plot_type, c("Krat_Exclosure" = "Kangaroo Rat Exclosure"))
+
+plot6 <- ggplot(new_PP_per_plot, aes(x = year, y = count, color = plot_type)) +
+  annotate(geom = "rect", fill = "grey", alpha = 0.4,
+           xmin = 1995, xmax = 1998,
+           ymin = -Inf, ymax = Inf) +
+  scale_color_manual(values = cbbPalette, name = "Plot Type") +
+  geom_point(size = 2) +
+  geom_line() +
+  xlab("New PP Individuals") +
+  ylab("Year") +
+  theme_bw() +
+  theme(panel.border = element_rect(fill = NA, colour = "black"),
+        axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
+        axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
+        axis.text.x = element_text(face = "bold", size = 12),
+        axis.text.y = element_text(face = "bold", size = 12),
+        legend.position = "bottom")
+#ggsave("figures/new_PP_per_year.png", plot6, width = 5, height = 4)  
 
 #############################################################
 # PP BIOMASS CALCULATIONS
