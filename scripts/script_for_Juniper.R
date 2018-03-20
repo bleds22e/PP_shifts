@@ -35,7 +35,7 @@ run.ms = function() {
   
   #  Define a null model for p
   p.dot = list(formula =  ~ 1)
-  p.stratum = S.stratum = list(formula = ~ stratum)
+  p.stratum = list(formula = ~ stratum)
   
   #  Define range of models for Psi: value for each possible transition
   #     in the Mark example for Psi is accomplished by -1+stratum:tostratum,
@@ -101,7 +101,7 @@ mark_trmt_all <- read.csv(text = all, header = TRUE, stringsAsFactors = FALSE)
 mark_trmt_all_test = mark_trmt_all[500:700,]
 
 # prep data for RMark
-all_ms <- select(mark_trmt_all_test, captures) %>% rename(ch = captures)
+all_ms <- select(mark_trmt_all, captures) %>% rename(ch = captures)
 
 # FUNCTIONS
 
@@ -109,12 +109,12 @@ run.ms = function() {
   # RMark function for Portal data
   
   #  Define range of models for S: survival for each stratum
-  S.dot = list(formula = ~ 1)
+  #S.dot = list(formula = ~ 1)
   S.stratum = list(formula = ~ -1 + stratum + PB_time)
   
   #  Define a null model for p
-  p.dot = list(formula =  ~ 1)
-  p.stratum = S.stratum = list(formula = ~ stratum + PB_time)
+  #p.dot = list(formula =  ~ 1)
+  p.stratum = list(formula = ~ stratum + PB_time)
   
   #  Define range of models for Psi: value for each possible transition
   #     in the Mark example for Psi is accomplished by -1+stratum:tostratum,
@@ -161,5 +161,5 @@ ms.results = run.ms()
 ms.results
 names(ms.results)
 
-ms.summary = ms.results$S.stratum.p.dot.Psi.s
-#write.csv(ms.summary$results$real, "data/MARKdata/MARKoutput_PP_all_real.csv")
+ms.summary = ms.results$S.stratum.p.stratum.Psi.s
+write.csv(ms.summary$results$real, "data/MARKdata/MARKoutput_PP_all_real.csv")
