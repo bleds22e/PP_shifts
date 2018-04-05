@@ -14,6 +14,8 @@ library(RCurl)
 library(RMark)
 library(tidyverse)
 library(gridExtra)
+library(forecast)
+library(nlme)
 source("scripts/movement_fxns.r")
 source("scripts/additional_movement_fxns.r")
 source("scripts/additional_fxns_EKB.r")
@@ -106,6 +108,9 @@ ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = species)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
+  annotate(geom = "rect", fill = "grey", alpha = 0.4,
+           xmin = 2008, xmax = 2010,
+           ymin = -Inf, ymax = Inf) +
   scale_color_manual(values = cbbPalette) +
   geom_point() +
   geom_line() +
@@ -140,10 +145,6 @@ PP_residuals <- as.data.frame(residuals(against_1_to_1))
 PP_linear_model <- bind_cols(year, PP_predicted, PP_residuals)
 colnames(PP_linear_model) <- c("year", "PP_predicted", "PP_residuals")
 
-# check that the residuals look correct
-plot(PP_linear_model$PP_residuals)
-abline(h = 0)
-
 #----------------------------------------------------------
 # Plot PP Residuals Against PB Abundance
 #----------------------------------------------------------
@@ -158,18 +159,29 @@ PB_avg_year <- select(avg_by_year, year, species, avg_indiv) %>%
 PP_and_PB_innerjoin <- inner_join(PB_avg_year, PP_linear_model, by = "year")
 
 # define x and y for the polynomial model
-x = PP_and_PB_innerjoin$PB_avg_indiv
-y = PP_and_PB_innerjoin$PP_residuals
+x2 = PP_and_PB_innerjoin$PB_avg_indiv
+y2 = PP_and_PB_innerjoin$PP_residuals
 
 # quadratic model 
-PP_PB_model <- lm(formula = y ~ x + I(x^2))
-summary(PP_PB_model)
+PP_PB_model_original <- gls(y2 ~ x2 + I(x2^2))
+summary(PP_PB_model_original)
 
-# plot the regression
+# test for autoregressive structure
+auto.arima(PP_linear_model$PP_residuals)
+
+# run with autoregression = 1
+PP_PB_model_AR1 <- gls(y2 ~ x2 + I(x2^2),
+                 correlation = corAR1(form = ~1))
+summary(PP_PB_model_AR1)
+
+# compare models
+anova(PP_PB_model_original, PP_PB_model_AR1)
+
+# plot the regression (using original model)
 (plot1 <- ggplot(data = PP_and_PB_innerjoin, aes(x = PB_avg_indiv, y = PP_residuals)) +
   geom_hline(aes(yintercept = 0), color = 'black')+
   stat_smooth(method = 'lm', formula = y ~ x + I(x^2), size = 2) + # quadratic smoothing
-  geom_point(size = 3) + 
+  geom_point(size = 2) + 
   xlab("PB Avg. Individuals per Plot by Year") +
   ylab("Residuals Against the 1:1 Line for PP") +
   # data for "title" is from the summary  of PP_PB_model
@@ -177,12 +189,12 @@ summary(PP_PB_model)
   labs(title = "y = 0.0008x^2 - 0.3026x + 10.3314, Adj. R2 = 0.696, n = 21, p = 0.8.686e-06") +
   theme_bw()+
   theme(panel.border = element_rect(fill = NA, colour = "black"),
-        plot.title = element_text(face = "italic", colour = "dark grey", size = 14, hjust = 0.5),
+        plot.title = element_text(face = "italic", colour = "dark grey", size = 10, hjust = 0.5),
         axis.title.x = element_text(face = "bold", size = 14),
         axis.title.y = element_text(face = "bold", size = 14),
         axis.text.x = element_text(face = "bold", size = 12),
         axis.text.y = element_text(face = "bold", size = 12)))
-#ggsave("figures/PP_residuals_PB_abund_classic.png", plot1, width = 8.5, height = 8)
+#ggsave("figures/PP_residuals_PB_abund.png", plot1, width = 5.5, height = 4.5)
 
 #-----------------------------------------------------------
 # Plot PP Residuals and PP Abundance Through Time
@@ -196,6 +208,9 @@ PP_and_PB_fulljoin[is.na(PP_and_PB_fulljoin)] <- 0 # to line up PB abundance for
 (plot2 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PP_residuals)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
+           ymin = -Inf, ymax = Inf) +
+  annotate(geom = "rect", fill = "grey", alpha = 0.4,
+           xmin = 2008, xmax = 2010,
            ymin = -Inf, ymax = Inf) +
   geom_hline(aes(yintercept = 0), color = 'red')+
   geom_point(size = 3)+
@@ -212,7 +227,10 @@ PP_and_PB_fulljoin[is.na(PP_and_PB_fulljoin)] <- 0 # to line up PB abundance for
 (plot3 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PB_avg_indiv)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4, 
            xmin = 1995, xmax = 1998, 
-           ymin = -Inf, ymax = Inf) +  
+           ymin = -Inf, ymax = Inf) +
+  annotate(geom = "rect", fill = "grey", alpha = 0.4,
+           xmin = 2008, xmax = 2010,
+           ymin = -Inf, ymax = Inf) +
   geom_point(size = 3) +
   geom_line() +
   xlab("Year") +
@@ -325,29 +343,54 @@ for (i in 1:length(tags_all)){
 }
 
 # total number new PPs per year
+
+# Method 1: total per year
+# new_PP_per_plot <- first_period %>% 
+#   filter(plot_type != "Removal") %>% 
+#   group_by(year, plot_type) %>% 
+#   summarise(count = n())
+
+# Method 2: avg plot sum by year
 new_PP_per_plot <- first_period %>% 
   filter(plot_type != "Removal") %>% 
+  group_by(plot, year, plot_type) %>% 
+  summarise(count = n()) %>% 
+  ungroup() 
+new_PP_per_plot <- new_PP_per_plot %>% 
   group_by(year, plot_type) %>% 
-  summarise(count = n())
+  summarise(avg_plot_sum_by_year = mean(count), se = plotrix::std.error(count))
+
+# plot method 2:
+new_PP_per_plot <- new_PP_per_plot %>% 
+  mutate(ymin = avg_plot_sum_by_year - se, 
+         ymax = avg_plot_sum_by_year + se) %>% 
+  replace_na(list(avg_plot_sum_by_year = 0, se = 0, ymin = 0, ymax = 0))
+
 new_PP_per_plot$plot_type <- plyr::revalue(new_PP_per_plot$plot_type, c("Krat_Exclosure" = "Kangaroo Rat Exclosure"))
 
-plot6 <- ggplot(new_PP_per_plot, aes(x = year, y = count, color = plot_type)) +
+(plot6 <- ggplot(new_PP_per_plot, aes(x = year, 
+                                      y = avg_plot_sum_by_year, 
+                                      color = plot_type)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
+           ymin = -Inf, ymax = Inf) +
+  annotate(geom = "rect", fill = "grey", alpha = 0.4,
+           xmin = 2008, xmax = 2010,
            ymin = -Inf, ymax = Inf) +
   scale_color_manual(values = cbbPalette, name = "Plot Type") +
   geom_point(size = 2) +
   geom_line() +
-  xlab("New PP Individuals") +
-  ylab("Year") +
+  geom_errorbar(aes(ymin = ymin, ymax = ymax), width = .5) +
+  ylab("Avg. New PP Individuals per Plot") +
+  xlab("Year") +
   theme_bw() +
   theme(panel.border = element_rect(fill = NA, colour = "black"),
         axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
         axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
         axis.text.x = element_text(face = "bold", size = 12),
         axis.text.y = element_text(face = "bold", size = 12),
-        legend.position = "bottom")
-#ggsave("figures/new_PP_per_year.png", plot6, width = 5, height = 4)  
+        legend.position = "bottom"))
+#ggsave("figures/new_PP_per_year.png", plot6, width = 5, height = 4.5)  
 
 #############################################################
 # PP BIOMASS CALCULATIONS
@@ -424,4 +467,4 @@ biomass_ratio <- biomass_spread %>% mutate(EX_to_CO_ratio = exclosure/control)
         axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
         axis.text.x = element_text(face = "bold", size = 12),
         axis.text.y = element_text(face = "bold", size = 12)))
-#ggsave("figures/biomass_ratio.png", plot5, width = 8.5, height = 8)  
+#ggsave("figures/biomass_ratio.png", plot5, width = 4.5, height = 4)  
