@@ -109,11 +109,11 @@ run.ms = function() {
   # RMark function for Portal data
   
   #  Define range of models for S: survival for each stratum
-  #S.dot = list(formula = ~ 1)
+  S.dot = list(formula = ~ 1)
   S.stratum = list(formula = ~ -1 + stratum + PB_time)
   
   #  Define a null model for p
-  #p.dot = list(formula =  ~ 1)
+  p.dot = list(formula =  ~ 1)
   p.stratum = list(formula = ~ stratum + PB_time)
   
   #  Define range of models for Psi: value for each possible transition
@@ -161,5 +161,6 @@ ms.results = run.ms()
 ms.results
 names(ms.results)
 
-ms.summary = ms.results$S.stratum.p.stratum.Psi.s
-write.csv(ms.summary$results$real, "data/MARKdata/MARKoutput_PP_all_real.csv")
+ms.summary = ms.results$S.stratum.p.dot.Psi.s
+ms.summary
+write.csv(ms.summary$results$real, "data/MARKdata/MARKoutput_PP_all_p.dot.csv")
