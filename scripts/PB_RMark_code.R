@@ -13,12 +13,15 @@ library(portalr)
 library(RCurl)
 library(RMark)
 library(tidyverse)
-library(gridExtra)
 library(forecast)
 library(nlme)
-source("scripts/movement_fxns.r")
-source("scripts/additional_movement_fxns.r")
-source("scripts/additional_fxns_EKB.r")
+library(ggplot2)
+library(grid)
+library(gridExtra)
+library(patchwork)
+
+source("scripts/functions_SRS.r")
+source("scripts/functions_EKB.r")
 
 # colorblind palette for plotting
 cbbPalette <- c("#E69F00", "#56B4E9", "#009E73","#CC79A7")
@@ -178,23 +181,22 @@ summary(PP_PB_model_AR1)
 anova(PP_PB_model_original, PP_PB_model_AR1)
 
 # plot the regression (using original model)
-(plot1 <- ggplot(data = PP_and_PB_innerjoin, aes(x = PB_avg_indiv, y = PP_residuals)) +
+plot1 <- ggplot(data = PP_and_PB_innerjoin, aes(x = PB_avg_indiv, y = PP_residuals)) +
   geom_hline(aes(yintercept = 0), color = 'black')+
   stat_smooth(method = 'lm', formula = y ~ x + I(x^2), size = 2) + # quadratic smoothing
   geom_point(size = 2) + 
-  xlab("PB Avg. Individuals per Plot by Year") +
-  ylab("Residuals Against the 1:1 Line for PP") +
-  # data for "title" is from the summary  of PP_PB_model
-  #   will need to update manually if data changes
-  labs(title = "y = 0.0008x^2 - 0.3026x + 10.3314, Adj. R2 = 0.696, n = 21, p = 0.8.686e-06") +
-  theme_bw()+
+  xlab("Average PB per Plot by Year") +
+  ylab("PP Residuals for 1:1 Line") +
+  ggtitle("C") +
+  theme_classic()+
   theme(panel.border = element_rect(fill = NA, colour = "black"),
-        plot.title = element_text(face = "italic", colour = "dark grey", size = 10, hjust = 0.5),
+        plot.title = element_text(face = "bold", size = 18, hjust = -.1),
         axis.title.x = element_text(face = "bold", size = 14),
         axis.title.y = element_text(face = "bold", size = 14),
         axis.text.x = element_text(face = "bold", size = 12),
-        axis.text.y = element_text(face = "bold", size = 12)))
-#ggsave("figures/PP_residuals_PB_abund.png", plot1, width = 5.5, height = 4.5)
+        axis.text.y = element_text(face = "bold", size = 12),
+        plot.margin = margin(l = 25))
+#ggsave("figures/PP_residuals_PB_abund_notitle.png", plot1, width = 5, height = 4.5)
 
 #-----------------------------------------------------------
 # Plot PP Residuals and PP Abundance Through Time
@@ -205,26 +207,28 @@ PP_and_PB_fulljoin <- full_join(PP_linear_model, PB_avg_year, by = "year")
 PP_and_PB_fulljoin[is.na(PP_and_PB_fulljoin)] <- 0 # to line up PB abundance for plotting
 
 # PP residuals through time
-(plot2 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PP_residuals)) +
+plot2 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PP_residuals)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 2008, xmax = 2010,
            ymin = -Inf, ymax = Inf) +
+  geom_point(size = 3) +
   geom_hline(aes(yintercept = 0), color = 'red')+
-  geom_point(size = 3)+
   xlab("Year") +
-  ylab("Residuals Against the 1:1 Line for PP") +
-  theme_bw() +
+  ylab("PP Resid. for 1:1 Line") +
+  ggtitle("B") +
+  theme_classic() +
   theme(panel.border = element_rect(fill = NA, colour = "black"),
+        plot.title = element_text(face = "bold", size = 18, hjust = -.125),
         axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
         axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
         axis.text.x = element_text(face = "bold", size = 12),
-        axis.text.y = element_text(face = "bold", size = 12)))
+        axis.text.y = element_text(face = "bold", size = 12))
 
 # Average PB individuals through time
-(plot3 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PB_avg_indiv)) +
+plot3 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PB_avg_indiv)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4, 
            xmin = 1995, xmax = 1998, 
            ymin = -Inf, ymax = Inf) +
@@ -233,18 +237,21 @@ PP_and_PB_fulljoin[is.na(PP_and_PB_fulljoin)] <- 0 # to line up PB abundance for
            ymin = -Inf, ymax = Inf) +
   geom_point(size = 3) +
   geom_line() +
+  ggtitle("A") +
   xlab("Year") +
-  ylab("PB Avg. Individuals per Plot") +
-  theme_bw() +
+  ylab("Average PB per Plot") +
+  theme_classic() +
   theme(panel.border = element_rect(fill = NA, colour = "black"),
+        plot.title = element_text(face = "bold", size = 18, hjust = -.125),
         axis.title.x = element_blank(),
         axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
         axis.text.x = element_text(face = "bold", size = 12),
-        axis.text.y = element_text(face = "bold", size = 12)))
+        axis.text.y = element_text(face = "bold", size = 12))
 
-plot4 <- grid.arrange(plot3, plot2, nrow = 2)
-#ggsave("figures/PP_resid_PB_avg.png", plot = plot4, width = 8.5, height = 8)
+#try patchwork
 
+plot4 <- (plot3/plot2) | plot1
+ggsave("figures/ms_figures/PB_patchwork.png", plot4, width = 12.5, height = 6)
 
 
 ############################################################
@@ -282,45 +289,49 @@ mark_trmt_all = create_trmt_hist(PP_only, tags_all, periods_all) # create one gi
 # write.csv(mark_trmt_all, "data/PP_capture_history_all.csv")
 
 #---------------------------------------------------------------
-# Run MARK analyses on both data sets
+# Run MARK analyses on all PPs
 #---------------------------------------------------------------
 
-# load in capture histories if already obtained
-mark_trmt_pre <- read.csv("data/MARKdata/PP_capture_history_prePBmax.csv", header = TRUE, stringsAsFactors = FALSE)
-mark_trmt_post <- read.csv("data/MARKdata/PP_capture_history_postPBmax.csv", header = TRUE, stringsAsFactors = FALSE)
+# load in capture histories 
+all <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/MARKdata/PP_capture_history_all.csv")
+mark_trmt_all <- read.csv(text = all, header = TRUE, stringsAsFactors = FALSE)
 
 # prep data for RMark
-pre_ms <- select(mark_trmt_pre, captures) %>% rename(ch = captures)
-post_ms <- select(mark_trmt_post, captures) %>% rename(ch = captures)
+all_ms <- select(mark_trmt_all, captures) %>% rename(ch = captures)
 first_PP <- min(pre_PB_max$period)
 
-### Before PBs Infiltrated
-
 # Process data
-ms.pr = process.data(pre_ms, begin.time = first_PP, model = "Multistrata")
-  
-# Create default design data
-ms.ddl = make.design.data(ms.pr)
-
-# Run the models and examine the output
-
-ms.results = run.ms()
-ms.summary = ms.results$S.stratum.p.dot.Psi.s
-write.csv(ms.summary$results$real, "data/MARKdata/MARKoutput_PP_prePBmax_real.csv")
-
-### After PBs Infiltrated
-
-# Process data
-ms.pr = process.data(post_ms, begin.time = PB_max, model = "Multistrata")
+ms.pr = process.data(all_ms, begin.time = first_PP, model = "Multistrata")
 
 # Create default design data
 ms.ddl = make.design.data(ms.pr)
 
+# add design covariates for PB era
+PB_time_after = as.factor(seq(PB_max, 435))
+
+ms.ddl$S$PB_time = 0
+ms.ddl$S$PB_time[ms.ddl$S$time %in% PB_time_after] = 1
+
+ms.ddl$p$PB_time = 0
+ms.ddl$p$PB_time[ms.ddl$p$time %in% PB_time_after] = 1
+
+ms.ddl$Psi$PB_time = 0
+ms.ddl$Psi$PB_time[ms.ddl$Psi$time %in% PB_time_after] = 1
+
 # Run the models and examine the output
 
-ms.results = run.ms()
+#MarkViewer="open -a TextEdit" # edit to make results pop up on a Mac
+ms.results = run.ms(S_dot = NULL, 
+                    S_stratum = list(formula = ~ -1 + stratum + PB_time),
+                    p_dot = list(formula = ~ 1),
+                    p_stratum = NULL,
+                    Psi_s = list(formula =  ~ -1 + stratum:tostratum + PB_time, link = "logit"))
+ms.results
+names(ms.results)
+
 ms.summary = ms.results$S.stratum.p.dot.Psi.s
-write.csv(ms.summary$results$real, "data/MARKdata/MARKoutput_PP_postPBmax_real.csv")
+ms.summary
+#write.csv(ms.summary$results$real, "data/MARKdata/MARKoutput_PP_all_real.csv")
 
 #------------------------------------------------------------
 # Number of New PP Individuals Showing Up on Plots
@@ -391,6 +402,7 @@ new_PP_per_plot$plot_type <- plyr::revalue(new_PP_per_plot$plot_type, c("Krat_Ex
         axis.text.y = element_text(face = "bold", size = 12),
         legend.position = "bottom"))
 #ggsave("figures/new_PP_per_year.png", plot6, width = 5, height = 4.5)  
+
 
 #############################################################
 # PP BIOMASS CALCULATIONS
