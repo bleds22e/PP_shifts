@@ -5,7 +5,7 @@
 ### Bring in the Data
 
 library(RMark)
-#MarkViewer="open -a TextEdit" # edit to make results pop up on a Mac
+MarkViewer="open -a TextEdit" # edit to make results pop up on a Mac
 library(dplyr)
 
 # read in data
