@@ -98,30 +98,43 @@ clean_data_for_capture_histories <- function(data){
   
 }
 
+
 # will need to create MARK function
-# run.ms = function() {
-#   
-#   # RMark function for Portal data
-#   
-#   #  Define range of models for S: survival for each stratum
-#   S.stratum = list(formula =  ~ -1 + stratum)
-#   
-#   #  Define a null model for p
-#   p.dot = list(formula =  ~ 1)
-#   
-#   #  Define range of models for Psi: value for each possible transition
-#   #     in the Mark example for Psi is accomplished by -1+stratum:tostratum,
-#   #     which nests tostratum within stratum.
-#   Psi.s = list(formula =  ~ -1 + stratum:tostratum, link = "logit")
-#   
-#   # Create model list and run assortment of models
-#   ms.model.list = create.model.list("Multistrata")
-#   
-#   ms.results = mark.wrapper(ms.model.list,
-#                             data = ms.pr, ddl = ms.ddl,
-#                             options="SIMANNEAL")
-#   
-#   # Return model table and list of models
-#   return(ms.results)
-#   
-# }
+run.ms = function(S_dot = list(formula = ~ 1), 
+                  S_stratum = list(formula =  ~ -1 + stratum + PB_time), 
+                  p_dot = list(formula =  ~ 1), 
+                  p_stratum = list(formula =  ~ -1 + stratum + PB_time), 
+                  Psi_s = list(formula =  ~ -1 + stratum:tostratum + PB_time, link = "logit")) {
+
+  # RMark function for Portal data
+  if (is.null(S_dot)) {
+    S.stratum = S_stratum
+  } else if (is.null(S_stratum)) {
+    S.dot = S_dot
+  } else {
+    S.stratum = S_stratum
+    S.dot = S_dot
+  }
+  
+  if (is.null(p_dot)) {
+    p.stratum = p_stratum
+  } else if (is.null(p_stratum)) {
+    p.dot = p_dot
+  } else {
+    p.stratum = p_stratum
+    p.dot = p_dot
+  }
+
+  Psi.s = Psi_s
+
+  # Create model list and run assortment of models
+  ms.model.list = create.model.list("Multistrata")
+
+  ms.results = mark.wrapper(ms.model.list,
+                            data = ms.pr, ddl = ms.ddl,
+                            options="SIMANNEAL")
+
+  # Return model table and list of models
+  return(ms.results)
+
+}
