@@ -5,8 +5,7 @@
 # LIBRARIES and SOURCE CODE
 
 # install portalr if not already done
-#library(devtools)
-#install_github("weecology/portalr")
+#devtools::install_github("weecology/portalr")
 
 # libraries
 library(portalr)
@@ -28,11 +27,11 @@ cbbPalette <- c("#E69F00", "#56B4E9", "#009E73","#CC79A7")
 
 # rodent file from repo
 rodents <- getURL("https://raw.githubusercontent.com/weecology/PortalData/master/Rodents/Portal_rodent.csv") 
-rdat <- read.csv(text = rodents, header = TRUE, na.strings = c(""))
+rdat <- read.csv(text = rodents, header = TRUE, na.strings = c(""), stringsAsFactors = FALSE)
 
 # species file
 species <- getURL("https://raw.githubusercontent.com/weecology/PortalData/master/Rodents/Portal_rodent_species.csv")
-sdat <- read.csv(text = species, header = TRUE, na.strings = c(""))
+sdat <- read.csv(text = species, header = TRUE, na.strings = c(""), stringsAsFactors = FALSE)
 
 # trapping file from repo
 trapping <- getURL("https://raw.githubusercontent.com/weecology/PortalData/master/Rodents/Portal_rodent_trapping.csv")
@@ -105,7 +104,7 @@ avg_by_year <- avg_by_year %>% # average by treatment type per year
 avg_by_year_plotting <- avg_by_year
 avg_by_year_plotting$plot_type <- plyr::revalue(avg_by_year$plot_type, c("Krat_Exclosure" = "Kangaroo Rat Exclosure"))
 
-ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = species)) + 
+ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = species, group = species)) + 
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
@@ -113,13 +112,13 @@ ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = species)) +
            xmin = 2008, xmax = 2010,
            ymin = -Inf, ymax = Inf) +
   scale_color_manual(values = cbbPalette) +
-  geom_point() +
   geom_line() +
+  geom_point() +
   facet_wrap( ~ plot_type, nrow = 2) + 
   xlab("Year") +
   ylab("Avg. Inidividuals per Plot") +
   labs(color = "Species") +
-  theme_bw()
+  theme_classic()
 
 #-----------------------------------------------------------
 # Residuals Against the 1:1 line
@@ -246,10 +245,9 @@ plot3 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PB_avg_indiv)) +
         axis.text.x = element_text(face = "bold", size = 12),
         axis.text.y = element_text(face = "bold", size = 12))
 
-#try patchwork
 
 plot4 <- (plot3/plot2) | plot1
-ggsave("figures/ms_figures/PB_patchwork.png", plot4, width = 12.5, height = 6)
+#ggsave("figures/ms_figures/PB_patchwork.png", plot4, width = 12.5, height = 6)
 
 
 ############################################################
@@ -351,15 +349,8 @@ for (i in 1:length(tags_all)){
   first_period <- rbind(first_period, tmp2)   # add to new dataframe
 }
 
-# total number new PPs per year
+# total number new PPs (avg plot sume by year)
 
-# Method 1: total per year
-# new_PP_per_plot <- first_period %>% 
-#   filter(plot_type != "Removal") %>% 
-#   group_by(year, plot_type) %>% 
-#   summarise(count = n())
-
-# Method 2: avg plot sum by year
 new_PP_per_plot <- first_period %>% 
   filter(plot_type != "Removal") %>% 
   group_by(plot, year, plot_type) %>% 
@@ -369,7 +360,7 @@ new_PP_per_plot <- new_PP_per_plot %>%
   group_by(year, plot_type) %>% 
   summarise(avg_plot_sum_by_year = mean(count), se = plotrix::std.error(count))
 
-# plot method 2:
+# plot new PPs
 new_PP_per_plot <- new_PP_per_plot %>% 
   mutate(ymin = avg_plot_sum_by_year - se, 
          ymax = avg_plot_sum_by_year + se) %>% 
@@ -377,9 +368,10 @@ new_PP_per_plot <- new_PP_per_plot %>%
 
 new_PP_per_plot$plot_type <- plyr::revalue(new_PP_per_plot$plot_type, c("Krat_Exclosure" = "Kangaroo Rat Exclosure"))
 
-(plot6 <- ggplot(new_PP_per_plot, aes(x = year, 
-                                      y = avg_plot_sum_by_year, 
-                                      color = plot_type)) +
+plot6 <- ggplot(new_PP_per_plot, aes(x = year, 
+                                     y = avg_plot_sum_by_year, 
+                                     color = plot_type,
+                                     group = plot_type)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
@@ -392,14 +384,14 @@ new_PP_per_plot$plot_type <- plyr::revalue(new_PP_per_plot$plot_type, c("Krat_Ex
   geom_errorbar(aes(ymin = ymin, ymax = ymax), width = .5) +
   ylab("Avg. New PP Individuals per Plot") +
   xlab("Year") +
-  theme_bw() +
+  theme_classic() +
   theme(panel.border = element_rect(fill = NA, colour = "black"),
         axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
         axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
         axis.text.x = element_text(face = "bold", size = 12),
         axis.text.y = element_text(face = "bold", size = 12),
-        legend.position = "bottom"))
-#ggsave("figures/new_PP_per_year.png", plot6, width = 5, height = 4.5)  
+        legend.position = "bottom")
+#ggsave("figures/ms_figures/new_PP_per_year_classic.png", plot6, width = 5.5, height = 4.5)  
 
 
 #############################################################
@@ -460,21 +452,21 @@ ggplot(biomass_spread, aes(x = year, y = residuals)) +
 # ratio
 biomass_ratio <- biomass_spread %>% mutate(EX_to_CO_ratio = exclosure/control)
 
-(plot5 <- ggplot(biomass_ratio, aes(year, EX_to_CO_ratio))+
+plot5 <- ggplot(biomass_ratio, aes(year, EX_to_CO_ratio, group = 1))+
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
-    annotate(geom = "rect", fill = "grey", alpha = 0.4,
-             xmin = 2008, xmax = 2010, # 2008 is the last time PBs were on 8 krat exclosure plots (366); 2010 first time not caught in a census
-             ymin = -Inf, ymax = Inf) +
+  annotate(geom = "rect", fill = "grey", alpha = 0.4,
+           xmin = 2008, xmax = 2010, # 2008 is the last time PBs were on 8 krat exclosure plots (366); 2010 first time not caught in a census
+           ymin = -Inf, ymax = Inf) +
   geom_point(size = 3) +
   geom_line()+
   xlab("Year") +
   ylab("Kangaroo Rat Exlcosure:Control Biomass") +
-  theme_bw() +
+  theme_classic() +
   theme(panel.border = element_rect(fill = NA, colour = "black"),
         axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
         axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
         axis.text.x = element_text(face = "bold", size = 12),
-        axis.text.y = element_text(face = "bold", size = 12)))
-#ggsave("figures/biomass_ratio.png", plot5, width = 4.5, height = 4)  
+        axis.text.y = element_text(face = "bold", size = 12))
+#ggsave("figures/ms_figures/biomass_ratio.png", plot5, width = 5.5, height = 4.5)  
