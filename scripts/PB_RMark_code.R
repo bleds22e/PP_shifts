@@ -14,7 +14,6 @@ library(RMark)
 library(tidyverse)
 library(forecast)
 library(nlme)
-library(ggplot2)
 library(patchwork)
 
 source("scripts/functions_SRS.r")
