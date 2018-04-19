@@ -192,7 +192,7 @@ plot1 <- ggplot(data = PP_and_PB_innerjoin, aes(x = PB_avg_indiv, y = PP_residua
         axis.text.x = element_text(face = "bold", size = 12),
         axis.text.y = element_text(face = "bold", size = 12),
         plot.margin = margin(l = 25))
-#ggsave("figures/PP_residuals_PB_abund_notitle.png", plot1, width = 5, height = 4.5)
+#ggsave("figures/ms_figures/PP_residuals_PB_abund_notitle.png", plot1, width = 5, height = 4.5)
 
 #-----------------------------------------------------------
 # Plot PP Residuals and PP Abundance Through Time
@@ -315,7 +315,7 @@ ms.ddl$Psi$PB_time[ms.ddl$Psi$time %in% PB_time_after] = 1
 
 # Run the models and examine the output
 
-#MarkViewer="open -a TextEdit" # edit to make results pop up on a Mac
+MarkViewer="open -a TextEdit" # edit to make results pop up on a Mac
 ms.results = run.ms(S_dot = NULL, 
                     S_stratum = list(formula = ~ -1 + stratum + PB_time),
                     p_dot = list(formula = ~ 1),
@@ -348,7 +348,7 @@ for (i in 1:length(tags_all)){
   first_period <- rbind(first_period, tmp2)   # add to new dataframe
 }
 
-# total number new PPs (avg plot sume by year)
+# total number new PPs (avg plot sum by year)
 
 new_PP_per_plot <- first_period %>% 
   filter(plot_type != "Removal") %>% 
@@ -378,11 +378,12 @@ plot6 <- ggplot(new_PP_per_plot, aes(x = year,
            xmin = 2008, xmax = 2010,
            ymin = -Inf, ymax = Inf) +
   scale_color_manual(values = cbbPalette, name = "Plot Type") +
-  geom_point(size = 2) +
+  geom_point(size = 2.5) +
   geom_line() +
   geom_errorbar(aes(ymin = ymin, ymax = ymax), width = .5) +
   ylab("Avg. New PP Individuals per Plot") +
   xlab("Year") +
+  #scale_y_log10() +
   theme_classic() +
   theme(panel.border = element_rect(fill = NA, colour = "black"),
         axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
@@ -390,7 +391,7 @@ plot6 <- ggplot(new_PP_per_plot, aes(x = year,
         axis.text.x = element_text(face = "bold", size = 12),
         axis.text.y = element_text(face = "bold", size = 12),
         legend.position = "bottom")
-#ggsave("figures/ms_figures/new_PP_per_year_classic.png", plot6, width = 5.5, height = 4.5)  
+#ggsave("figures/ms_figures/new_PP_per_year.png", plot6, width = 6, height = 4.5)  
 
 
 #############################################################
@@ -404,7 +405,7 @@ biomass_data <- portalr:::get_rodent_data(path = "repo", level = "Plot", output 
 
 # select certain treatments and filter by time
 biomass_dat <- biomass_data %>% 
-  filter(treatment == "control" | treatment == "exclosure", period >= 118 & period < 436) # get the right time periods
+  filter(treatment == "control" | treatment == "exclosure", period >= 118 & period <= 433) # get the right time periods
 
 # add a year column for later summarization
 year_prd_pairs <- unique(tdat[,c("year", "period")]) # get associated years and periods
@@ -467,5 +468,6 @@ plot5 <- ggplot(biomass_ratio, aes(year, EX_to_CO_ratio, group = 1))+
         axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
         axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
         axis.text.x = element_text(face = "bold", size = 12),
-        axis.text.y = element_text(face = "bold", size = 12))
+        axis.text.y = element_text(face = "bold", size = 12),
+        plot.margin = margin(10, 15, 10, 10))
 #ggsave("figures/ms_figures/biomass_ratio.png", plot5, width = 5.5, height = 4.5)  

@@ -5,8 +5,9 @@ repo_data_to_Supp_data <- function(data, species_data){
   target <- species_data$speciescode[species_data$censustarget == 1]
   
   data <- data %>% 
-    filter(period > 0, period < 436, #remove negative periods and periods after plot switch
-           year > 1987, #remove before first plot switch
+    filter(period > 0, #remove negative periods 
+           year > 1987, #remove before first plot switch and periods after plot switch 
+           year < 2015, # don't include 2015 because it's only 2 months worth of data
            plot > 0, species %in% target)
   
   ## make dataframe look like Sarah's raw data
