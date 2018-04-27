@@ -170,7 +170,7 @@ auto.arima(PP_linear_model$PP_residuals)
 
 # run with autoregression = 1
 PP_PB_model_AR1 <- gls(y2 ~ x2 + I(x2^2),
-                 correlation = corAR1(form = ~1))
+                   correlation = corAR1(form = ~1))
 summary(PP_PB_model_AR1)
 
 # compare models
