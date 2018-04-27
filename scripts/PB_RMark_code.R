@@ -177,10 +177,12 @@ summary(PP_PB_model_AR1)
 anova(PP_PB_model_original, PP_PB_model_AR1)
 
 # plot the regression (using original model)
-plot1 <- ggplot(data = PP_and_PB_innerjoin, aes(x = PB_avg_indiv, y = PP_residuals)) +
+plot1 <- 
+  ggplot(data = PP_and_PB_innerjoin, aes(x = PB_avg_indiv, y = PP_residuals)) +
   geom_hline(aes(yintercept = 0), color = 'black')+
-  stat_smooth(method = 'lm', formula = y ~ x + I(x^2), size = 2) + # quadratic smoothing
-  geom_point(size = 2) + 
+  #geom_line(aes(y = fitted(PP_PB_model_original)), size = 2, color = "black") +
+  stat_smooth(method = 'glm', formula = y ~ x + I(x^2), size = 2, color = "black") + # quadratic smoothing
+  geom_point(size = 3) + 
   xlab("Average PB per Plot by Year") +
   ylab("PP Residuals for 1:1 Line") +
   ggtitle("C") +
@@ -210,8 +212,9 @@ plot2 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PP_residuals)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 2008, xmax = 2010,
            ymin = -Inf, ymax = Inf) +
+  geom_hline(aes(yintercept = 0), color = 'black') +
   geom_point(size = 3) +
-  geom_hline(aes(yintercept = 0), color = 'red')+
+  geom_line()+
   xlab("Year") +
   ylab("PP Resid. for 1:1 Line") +
   ggtitle("B") +
@@ -246,7 +249,7 @@ plot3 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PB_avg_indiv)) +
 
 
 plot4 <- (plot3/plot2) | plot1
-#ggsave("figures/ms_figures/PB_patchwork.png", plot4, width = 12.5, height = 6)
+#ggsave("figures/ms_figures/PB_patchwork_blackline.png", plot4, width = 12.5, height = 6)
 
 
 ############################################################
