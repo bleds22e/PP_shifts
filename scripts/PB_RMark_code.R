@@ -19,8 +19,6 @@ library(patchwork)
 source("scripts/functions_SRS.r")
 source("scripts/functions_EKB.r")
 
-# colorblind palette for plotting
-cbbPalette <- c("#E69F00", "#56B4E9", "#009E73","#CC79A7")
 
 # DATA FILES
 
@@ -110,7 +108,6 @@ ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = species, group
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 2008, xmax = 2010,
            ymin = -Inf, ymax = Inf) +
-  scale_color_manual(values = cbbPalette) +
   geom_line() +
   geom_point() +
   facet_wrap( ~ plot_type, nrow = 2) + 
@@ -162,7 +159,7 @@ x2 = PP_and_PB_innerjoin$PB_avg_indiv
 y2 = PP_and_PB_innerjoin$PP_residuals
 
 # quadratic model 
-PP_PB_model_original <- gls(y2 ~ x2 + I(x2^2))
+PP_PB_model_original <- nls(y2 ~ x2 + I(x2^2))
 summary(PP_PB_model_original)
 
 # test for autoregressive structure
