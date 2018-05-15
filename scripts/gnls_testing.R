@@ -62,3 +62,25 @@ cor(y3, predict(m_cor))
 
 plot(x2,y3)
 lines(x2, predict(m_cor), col = "red", lty = 2, lwd = 3)
+
+
+summary(m)
+summary(m_cor)
+
+intervals(m)
+
+df <- as.data.frame(cbind(as.vector(x2), as.vector(y2), as.vector(y3)))
+df.predict <- cbind(df, predict(m, interval = 'confidence'))
+
+get_CI <- function(y,pref="") {
+  r1 <- t(apply(y,1,quantile,c(0.025,0.975)))
+  setNames(as.data.frame(r1),paste0(pref,c("lwr","upr")))
+}
+yvals <- get_CI(y3)
+
+ggplot(df, aes(x = x2, y = y3)) +
+  geom_point() +
+  geom_smooth(method = "nls")
+  
+  
+  
