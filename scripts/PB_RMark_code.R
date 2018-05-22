@@ -178,7 +178,7 @@ x2 = PP_and_PB_innerjoin$PB_avg_indiv
 y2 = PP_and_PB_innerjoin$PP_residuals
 
 # quadratic model 
-PP_PB_model_original <- nls(y2 ~ x2 + I(x2^2))
+PP_PB_model_original <- gls(y2 ~ x2 + I(x2^2))
 summary(PP_PB_model_original)
 
 # test for autoregressive structure
