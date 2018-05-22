@@ -101,6 +101,7 @@ avg_by_year <- avg_by_year %>% # average by treatment type per year
 avg_by_year_plotting <- avg_by_year
 avg_by_year_plotting$plot_type <- plyr::revalue(avg_by_year$plot_type, c("Krat_Exclosure" = "Kangaroo Rat Exclosure"))
 
+# by species
 ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = species, group = species)) + 
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
@@ -112,9 +113,27 @@ ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = species, group
   geom_point() +
   facet_wrap( ~ plot_type, nrow = 2) + 
   xlab("Year") +
-  ylab("Avg. Inidividuals per Plot") +
+  ylab("Avg. Inidividuals per Year") +
   labs(color = "Species") +
   theme_classic()
+#ggsave("figures/PP_PB_by_plottype.png")
+
+# by species
+ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = plot_type, group = plot_type)) + 
+  annotate(geom = "rect", fill = "grey", alpha = 0.4,
+           xmin = 1995, xmax = 1998,
+           ymin = -Inf, ymax = Inf) +
+  annotate(geom = "rect", fill = "grey", alpha = 0.4,
+           xmin = 2008, xmax = 2010,
+           ymin = -Inf, ymax = Inf) +
+  geom_line() +
+  geom_point() +
+  facet_wrap( ~ species, nrow = 2) + 
+  xlab("Year") +
+  ylab("Avg. Inidividuals per Year") +
+  labs(color = "Plot Type") +
+  theme_classic()
+#ggsave("figures/PP_PB_by_species.png")
 
 #-----------------------------------------------------------
 # Residuals Against the 1:1 line
