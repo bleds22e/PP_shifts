@@ -177,27 +177,21 @@ PP_and_PB_innerjoin <- inner_join(PB_avg_year, PP_linear_model, by = "year")
 x2 = PP_and_PB_innerjoin$PB_avg_indiv
 y2 = PP_and_PB_innerjoin$PP_residuals
 
-# quadratic model 
-PP_PB_model_original <- gls(y2 ~ x2 + I(x2^2))
-summary(PP_PB_model_original)
-
 # test for autoregressive structure
 auto.arima(PP_linear_model$PP_residuals)
 
-# run with autoregression = 1
-PP_PB_model_AR1 <- gls(y2 ~ x2 + I(x2^2),
-                   correlation = corAR1(form = ~1))
-summary(PP_PB_model_AR1)
-
-# compare models
-anova(PP_PB_model_original, PP_PB_model_AR1)
+# build and compare models
+PP_PB_model_linear <- gls(y2 ~ x2)
+PP_PB_model_linear_AR1 <- gls(y2 ~ x2, correlation = corAR1(form = ~1))
+anova(PP_PB_model_linear, PP_PB_model_linear_AR1)
 
 # plot the regression (using original model)
+
 plot1 <- 
   ggplot(data = PP_and_PB_innerjoin, aes(x = PB_avg_indiv, y = PP_residuals)) +
   geom_hline(aes(yintercept = 0), color = 'black')+
-  #geom_line(aes(y = fitted(PP_PB_model_original)), size = 2, color = "black") +
-  stat_smooth(method = 'glm', formula = y ~ x + I(x^2), size = 2, color = "black") + # quadratic smoothing
+  #geom_smooth(aes(y = fitted(PP_PB_model_linear)),  size = 1, color = "black") +
+  stat_smooth(method = 'lm', formula = y ~ x, size = 2, color = "black") +
   geom_point(size = 3) + 
   xlab("Average PB per Plot by Year") +
   ylab("PP Residuals for 1:1 Line") +
@@ -281,20 +275,20 @@ PP_only <- filter(all_clean, species == 'PP')
 #-----------------------------------------------------------
 
 # make two different capture histories based on PB_max
-pre_PB_max <- PP_only[(PP_only$period < PB_max),]
-post_PB_max <- PP_only[(PP_only$period >= PB_max),]
+#pre_PB_max <- PP_only[(PP_only$period < PB_max),]
+#post_PB_max <- PP_only[(PP_only$period >= PB_max),]
 
 ### Create a set of capture histories by treatment and by plot
-tags_pre = unique(pre_PB_max$tag) 
-tags_post = unique(post_PB_max$tag)
+#tags_pre = unique(pre_PB_max$tag) 
+#tags_post = unique(post_PB_max$tag)
 tags_all = unique(PP_only$tag)
 
-periods_pre = seq(min(PP_only$period),(PB_max-1)) # include all periods, even those with no PPs
-periods_post = seq(PB_max, max(PP_only$period))
+#periods_pre = seq(min(PP_only$period),(PB_max-1)) # include all periods, even those with no PPs
+#periods_post = seq(PB_max, max(PP_only$period))
 periods_all = seq(min(PP_only$period), max(PP_only$period))
 
-mark_trmt_pre = create_trmt_hist(pre_PB_max, tags_pre, periods_pre) # create capture history before PB_max
-mark_trmt_post = create_trmt_hist(post_PB_max, tags_post, periods_post) # create capture history after PB_max
+#mark_trmt_pre = create_trmt_hist(pre_PB_max, tags_pre, periods_pre) # create capture history before PB_max
+#mark_trmt_post = create_trmt_hist(post_PB_max, tags_post, periods_post) # create capture history after PB_max
 mark_trmt_all = create_trmt_hist(PP_only, tags_all, periods_all) # create one giant capture history
 
 # for future use:
@@ -307,8 +301,8 @@ mark_trmt_all = create_trmt_hist(PP_only, tags_all, periods_all) # create one gi
 #---------------------------------------------------------------
 
 # load in capture histories 
-all <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/MARKdata/PP_capture_history_all.csv")
-mark_trmt_all <- read.csv(text = all, header = TRUE, stringsAsFactors = FALSE)
+#all <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/MARKdata/PP_capture_history_all.csv")
+#mark_trmt_all <- read.csv(text = all, header = TRUE, stringsAsFactors = FALSE)
 
 # prep data for RMark
 all_ms <- select(mark_trmt_all, captures) %>% rename(ch = captures)
@@ -351,12 +345,6 @@ ms.summary
 # Number of New PP Individuals Showing Up on Plots
 #------------------------------------------------------------
 
-# Sarah's code _should_ go through everything, so each should be a unique tag
-#   - should ultimately check that Sarah's code does what we hope it does
-#   - `testthat` ? lol
-# I think every new/different animal gets a different tag
-# so just need to find the first period each tag is caught
-
 # make empty dataframe
 first_period <- setNames(data.frame(matrix(ncol = 21, nrow = 0)), names(PP_only))
 
@@ -368,7 +356,6 @@ for (i in 1:length(tags_all)){
 }
 
 # total number new PPs (avg plot sum by year)
-
 new_PP_per_plot <- first_period %>% 
   filter(plot_type != "Removal") %>% 
   group_by(plot, year, plot_type) %>% 
@@ -384,6 +371,7 @@ new_PP_per_plot <- new_PP_per_plot %>%
          ymax = avg_plot_sum_by_year + se) %>% 
   replace_na(list(avg_plot_sum_by_year = 0, se = 0, ymin = 0, ymax = 0))
 
+# rename plot_treatments for plotting
 new_PP_per_plot$plot_type <- plyr::revalue(new_PP_per_plot$plot_type, c("Krat_Exclosure" = "Kangaroo Rat Exclosure"))
 
 plot6 <- ggplot(new_PP_per_plot, aes(x = year, 
