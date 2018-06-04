@@ -1,16 +1,17 @@
 # use a test dataset to make sure each function does what is expected
 
 library(testthat)
-source(functions_SRS.r)
-source(functions_EKB.r)
+library(stringr)
+source(scripts/functions_SRS.r)
+source(scripts/functions_EKB.r)
 
 context("checks all functions used in analysis")
 
-testdat = "data/test_data.csv"
+testdat = "data/test_data_prepared.csv"
 
 # examples from testing rodents functions
 test_that("Check that tag numbers match between the sheets and scanner", {
-  expect_equal(compare_tags(testdat,scannerfile),data.frame(where=c('scan','sheet'),tag=c('B267E8','B267EB')))
+  expect_that(id_unknowns(testdat, 16), str_detect("s", testdat[c(14,15,44,45),tag]) = TRUE)
 })
 
 test_that("look for missing data ", {
