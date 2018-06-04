@@ -29,29 +29,18 @@ starred_tags = function(dat, tags, spp_col, tag_col){
   
   numcount = 1
   
-  # find tags that are 6 characters but are toe tags, not PIT tags
-  tags_6 <- dat_test[nchar(dat_test$tag) == 6,] # tags with 6 characters
-  no_PITtags <- tags_6 %>% 
-    filter(stringr::str_detect(tag, "[HIMNOPRSTUX]")) %>% # have characters not found in PIT tags
-    filter(grepl('\\d{4}\\w{2}', tag)) %>% # have 4 digits followed by 2 characters (unlikely to be a PIT tag)
-    select(tag)
-  
   for (t in 1:length(tags)){
     
     # only run on ear and toe tags, pit tags are very unlikely to be duplicated
-    # NOTE: there are some 6-character toe tags (e.g.1200DM, how to deal with these?)
-    #     - aside from Baiomys, most species codes should have a letter
-    #       outside of those included in PIT tags (A,B,C,D,E,F)
-    #     - Baiomys only has one of these (1450BA, only 1 record), so the above works
     
-    if (nchar(tags[t]) < 6 | tags[t] %in% no_PITtags){  
+    if (nchar(tags[t]) < 6){  #| tags[t] %in% no_PITtags
       tmp <- which(dat$tag == tags[t])
       
       # if indiv was captured multiple times  
       if (nrow(dat[tmp,]) > 1) {    
         
         # check num species recorded. If more than one, does data look OK if separated on species?
-        spp_list = unique(dat[tmp,spp_col]) # num of species with that thag
+        spp_list = unique(dat[tmp,spp_col]) # num of species with that tag
         
         for (sp in 1:length(spp_list)) {
           tmp2 = which(dat$tag == tags[t] & dat$species == spp_list[sp])
@@ -177,15 +166,17 @@ is_duplicate_tag = function(dat, tags, sex_col, spp_col, tag_col){
   outcount = 0
   
   # find tags that are 6 characters but are toe tags, not PIT tags
-  tags_6 <- dat_test[nchar(dat_test$tag) == 6,] # tags with 6 characters
+  tags_6 <- dat[nchar(dat$tag) >= 6,] # tags with 6 or more characters
   no_PITtags <- tags_6 %>% 
     filter(stringr::str_detect(tag, "[HIMNOPRSTUX]")) %>% # have characters not found in PIT tags
     filter(grepl('\\d{4}\\w{2}', tag)) %>% # have 4 digits followed by 2 characters (unlikely to be a PIT tag)
     select(tag)
+
+  all_tags <- c(tags, as.list(unlist(no_PITtags)))
+  unique_tags <- unique(all_tags)
   
-  for (t in 1:length(tags)){
+  for (t in 1:length(unique_tags)){
     #only run on ear and toe tags, pit tags are very unlikely to be duplicated
-    if (tags[t] %in% no_PITtags | nchar(tags[t]) < 6){ 
       tmp <- which(dat$tag == tags[t])
       
       # if indiv was captured multiple times  
@@ -235,7 +226,7 @@ is_duplicate_tag = function(dat, tags, sex_col, spp_col, tag_col){
               }
             }
           }
-        }}}}
+        }}}
   info = list(data = dat, bad = flagged_rats)
   return (info)
 }
