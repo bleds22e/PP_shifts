@@ -12,7 +12,7 @@ mark_trmt_all <- read.csv(text = all, header = TRUE, stringsAsFactors = FALSE)
 # prep data for RMark
 all_ms <- select(mark_trmt_all, captures) %>% rename(ch = captures)
 PB_max = 233
-first_PP <- PB_max - 1
+first_PP = 118
 
 # Process data
 ms.pr = process.data(all_ms, begin.time = first_PP, model = "Multistrata")
