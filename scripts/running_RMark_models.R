@@ -34,7 +34,7 @@ ms.ddl$Psi$PB_time[ms.ddl$Psi$time %in% PB_time_after] = 1
 
 # Run the models and examine the output
 
-MarkViewer="open -a TextEdit" # edit to make results pop up on a Mac
+#MarkViewer="open -a TextEdit" # edit to make results pop up on a Mac
 
 run.ms = function(){
   
@@ -50,7 +50,7 @@ run.ms = function(){
   p.strat_time = list(formula = ~ -1 + stratum + PB_time)
   p.strat_x_time = list(formula = ~ -1 + stratum*PB_time)
   
-  Psi.dot = list(formula = ~ 1) 
+  Psi.dot = list(formula = ~ 1, link = "logit") 
   Psi.stratum = list(formula =  ~ -1 + stratum:tostratum, link = "logit")
   Psi.time = list(formula = ~ -1 + PB_time, link = "logit")
   Psi.strat_time = list(formula = ~ -1 + stratum:tostratum + PB_time, link = "logit")
