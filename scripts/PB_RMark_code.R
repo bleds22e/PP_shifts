@@ -306,7 +306,7 @@ mark_trmt_all = create_trmt_hist(PP_only, tags_all, periods_all) # create one gi
 
 # prep data for RMark
 all_ms <- select(mark_trmt_all, captures) %>% rename(ch = captures)
-first_PP <- min(pre_PB_max$period)
+first_PP <- PB_max - 1
 
 # Process data
 ms.pr = process.data(all_ms, begin.time = first_PP, model = "Multistrata")
