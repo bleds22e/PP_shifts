@@ -266,7 +266,7 @@ plot4 <- (plot3/plot2) | plot1
 # PP POPULATION-LEVEL RATES and RMARK
 ############################################################
 
-# select on PPs from the data and use Sarah's code to clean
+# select only PPs from the data and use Sarah's code to clean
 all_clean <- clean_data_for_capture_histories(all)
 PP_only <- filter(all_clean, species == 'PP')
 

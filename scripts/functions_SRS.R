@@ -1,3 +1,4 @@
+
 # Functions used in the analysis that were originally written by Sarah R. Supp
 
 id_unknowns = function(dat, tag_col) {
@@ -28,18 +29,29 @@ starred_tags = function(dat, tags, spp_col, tag_col){
   
   numcount = 1
   
+  # find tags that are 6 characters but are toe tags, not PIT tags
+  tags_6 <- dat_test[nchar(dat_test$tag) == 6,] # tags with 6 characters
+  no_PITtags <- tags_6 %>% 
+    filter(stringr::str_detect(tag, "[HIMNOPRSTUX]")) %>% # have characters not found in PIT tags
+    filter(grepl('\\d{4}\\w{2}', tag)) %>% # have 4 digits followed by 2 characters (unlikely to be a PIT tag)
+    select(tag)
+  
   for (t in 1:length(tags)){
     
-    #only run on ear and toe tags, pit tags are very unlikely to be duplicated
-    #NOTE: there are some 6-character toe tags (e.g.1200DM, how to deal with these?)
-    if (nchar(tags[t]) < 6){ 
+    # only run on ear and toe tags, pit tags are very unlikely to be duplicated
+    # NOTE: there are some 6-character toe tags (e.g.1200DM, how to deal with these?)
+    #     - aside from Baiomys, most species codes should have a letter
+    #       outside of those included in PIT tags (A,B,C,D,E,F)
+    #     - Baiomys only has one of these (1450BA, only 1 record), so the above works
+    
+    if (nchar(tags[t]) < 6 | tags[t] %in% no_PITtags){  
       tmp <- which(dat$tag == tags[t])
       
       # if indiv was captured multiple times  
       if (nrow(dat[tmp,]) > 1) {    
         
         # check num species recorded. If more than one, does data look OK if separated on species?
-        spp_list = unique(dat[tmp,spp_col])
+        spp_list = unique(dat[tmp,spp_col]) # num of species with that thag
         
         for (sp in 1:length(spp_list)) {
           tmp2 = which(dat$tag == tags[t] & dat$species == spp_list[sp])
@@ -48,18 +60,18 @@ starred_tags = function(dat, tags, spp_col, tag_col){
           
           if ("*" %in% isnew) {
             #print(dat[tmp2,])
-            rowbreaks = which(isnew == "*", arr.in=TRUE) #find rows where * indicates a new tag
+            rowbreaks = which(isnew == "*", arr.ind = TRUE) #find rows where * indicates a new tag
             
             for (r in 1:length(rowbreaks)){
               if (r == 1) {
                 #GIVE an ID up to the first *
                 newtag = paste(tags[t], numcount, "s", sep = "") #make a new tag to keep separate
-                dat[tmp2,][1:rowbreaks[r]-1, tag_col] = newtag
+                dat[tmp2,][1:rowbreaks[r]-1, tag_col] = newtag # dataframe with rows before the next star
                 numcount = numcount + 1 
                 
                 #AND an ID to everything after the first * (the loop should take care of the next set and so on)
                 newtag = paste(tags[t], numcount, "s", sep = "") #make a new tag to keep separate
-                dat[tmp2,][rowbreaks[r]:nrow(dat[tmp2,]),tag_col] = newtag
+                dat[tmp2,][rowbreaks[r]:nrow(dat[tmp2,]),tag_col] = newtag # identifies this as different
                 numcount = numcount + 1
               }
               else if (r > 1) {
@@ -80,9 +92,9 @@ starred_tags = function(dat, tags, spp_col, tag_col){
 
 is_dead = function(dat, tags, spp_col, tag_col){
   
-  #checks note5 for "D", which indicated a dead rat. 
-  #by definition, all captures with the same tagID afterwards, must be a different individual
-  #assign these captures with a new tag ID that ends with 'm' for 'mortality.
+  # checks note5 for "D", which indicated a dead rat. 
+  # by definition, all captures with the same tagID afterwards, must be a different individual
+  # assign these captures with a new tag ID that ends with 'm' for 'mortality.
   
   numcount = 1
   
@@ -101,29 +113,28 @@ is_dead = function(dat, tags, spp_col, tag_col){
         isdead = as.vector(dat[tmp2,]$note5)
         
         if ("D" %in% isdead) {
-          rowbreaks = which(isdead == "D", arr.in=TRUE) #find rows where D indicates a dead individuals
-          endrow = nrow(dat[tmp2,])
-          #print (endrow)
+          rowbreaks = which(isdead == "D", arr.ind = TRUE) # find rows where D indicates a dead individuals
+          endrow = nrow(dat[tmp2,])                        # number of rows w/ that tag and species code  
           
-          for (r in 1:length(rowbreaks)){
-            if (r == 1) {
-              if (rowbreaks[r] == endrow) {
+          for (r in 1:length(rowbreaks)){ # length(rowbreaks) = number times D recorded
+            if (r == 1) {                 # first row break for that tag
+              if (rowbreaks[r] == endrow) { # only one time where the tag and species combo is recorded
+                
                 #GIVE an ID up to the first *
                 newtag = paste(tags[t], numcount, "m", sep = "") #make a new tag to keep separate
                 numrows = nrow(dat[tmp2,][1:rowbreaks[r],])  
                 newtagvector = as.vector(rep(newtag, numrows))
                 dat[tmp2,][1:rowbreaks[r], tag_col] = newtag
                 numcount = numcount + 1 
-                #print(dat[tmp2,]
-              }
-              else{
+             
+              } else {                      # if number of rows w/ combo is higher than 1
+                
                 #GIVE an ID up to the first *
                 newtag = paste(tags[t], numcount, "m", sep = "") #make a new tag to keep separate
                 numrows = nrow(dat[tmp2,][1:rowbreaks[r],])  
                 newtagvector = as.vector(rep(newtag, numrows))
                 dat[tmp2,][1:rowbreaks[r], tag_col] = newtag
                 numcount = numcount + 1 
-                #print(dat[tmp2,])
                 
                 #AND an ID to everything after the first "D" (the loop should take care of the next set and so on)
                 startrow = rowbreaks[r] + 1
@@ -132,14 +143,12 @@ is_dead = function(dat, tags, spp_col, tag_col){
                 newtagvector = as.vector(rep(newtag, numrows))
                 dat[tmp2,][(startrow:endrow),tag_col] = newtag
                 numcount = numcount + 1
+                
               }
-            }
-            else if (r > 1) {
+            } else if (r > 1) { # if this is not the first time a D is encountered for this tag
               if (rowbreaks[r] == endrow) {
                 break
-              }
-              else{
-                #print (t)
+              } else {
                 #GIVE an ID to everything after the next "D"
                 startrow = rowbreaks[r] + 1
                 newtag = paste(tags[t], numcount, "m", sep = "") #make a new tag to keep separate
@@ -147,6 +156,7 @@ is_dead = function(dat, tags, spp_col, tag_col){
                 newtagvector = as.vector(rep(newtag, numrows))
                 dat[tmp2,][(startrow:endrow),tag_col] = newtag
                 numcount = numcount + 1
+                
               }
             }
           }
@@ -166,9 +176,16 @@ is_duplicate_tag = function(dat, tags, sex_col, spp_col, tag_col){
   flagged_rats = data.frame("tag"=1, "reason"=1, "occurrences"=1)
   outcount = 0
   
+  # find tags that are 6 characters but are toe tags, not PIT tags
+  tags_6 <- dat_test[nchar(dat_test$tag) == 6,] # tags with 6 characters
+  no_PITtags <- tags_6 %>% 
+    filter(stringr::str_detect(tag, "[HIMNOPRSTUX]")) %>% # have characters not found in PIT tags
+    filter(grepl('\\d{4}\\w{2}', tag)) %>% # have 4 digits followed by 2 characters (unlikely to be a PIT tag)
+    select(tag)
+  
   for (t in 1:length(tags)){
     #only run on ear and toe tags, pit tags are very unlikely to be duplicated
-    if (nchar(tags[t]) < 6){ 
+    if (tags[t] %in% no_PITtags | nchar(tags[t]) < 6){ 
       tmp <- which(dat$tag == tags[t])
       
       # if indiv was captured multiple times  
@@ -225,7 +242,7 @@ is_duplicate_tag = function(dat, tags, sex_col, spp_col, tag_col){
 
 
 same_period = function(dat, tags){
-  # multiple individuals with same tag captured in same period? Questionable daata
+  # multiple individuals with same tag captured in same period? Questionable data
   flagged_rats = data.frame("tag"=1, "reason"=1, "occurrences"=1)
   outcount = 0
   
@@ -257,15 +274,15 @@ find_bad_data2 = function(dat, tags, sex_col, spp_col){
     tmp <- which(dat$tag == tags[t])
     
     if (nrow(dat[tmp,]) > 1) {    # if indiv was captured multiple times
-      sex_list = dat[tmp,sex_col]
-      sex = sex_list[1]
-      for (i in 2:length(sex_list)){  # check for consistent sex
-        if (!is.na(sex_list[i])){
-          if (sex_list[i] != sex) {
-            outcount = outcount + 1
-            flagged_rats[outcount,] <- c(tags[t], "sex", nrow(dat[tmp,]))
-            break
-          }}}
+      # sex_list = dat[tmp,sex_col]
+      # sex = sex_list[1]
+      # for (i in 2:length(sex_list)){  # check for consistent sex
+      #   if (!is.na(sex_list[i])){
+      #     if (sex_list[i] != sex) {
+      #       outcount = outcount + 1
+      #       flagged_rats[outcount,] <- c(tags[t], "sex", nrow(dat[tmp,]))
+      #       break
+      #     }}}
       spp_list = dat[tmp,spp_col]
       spp = spp_list[1]
       for (s in 2:length(spp_list)){  # check for consistent species
