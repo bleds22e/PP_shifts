@@ -15,6 +15,7 @@ library(tidyverse)
 library(forecast)
 library(nlme)
 library(patchwork)
+library(rapportools)
 
 source("scripts/functions_SRS.r")
 source("scripts/functions_EKB.r")

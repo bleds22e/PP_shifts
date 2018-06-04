@@ -13,6 +13,9 @@ id_unknowns = function(dat, tag_col) {
     if (rapportools::is.empty(tag)) {
       dat[irow, tag_col] = unk
     }
+    else if (tag == '0') {
+      dat[irow, tag_col] = unk
+    }
   }
   return(dat)
 }
