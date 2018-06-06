@@ -54,7 +54,14 @@ test_that("Check starred_tags() function", {
                c("1","2","3","12","22","45","47"))
 })
 
+test_that("Check is_dead() function", {
+  expect_equal(rownames(testdat3[str_detect(is_dead(testdat3, tags3, 9, 16)$tag, 'm'),]), 
+               c("8","9","10","11","49"))
+})
 
+test_that("Check is_duplicate_tag() function", {
+  
+})
 
 # Not working below this line --------------------------------------------------------------------
 
