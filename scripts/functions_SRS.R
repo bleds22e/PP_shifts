@@ -184,7 +184,9 @@ is_duplicate_tag = function(dat, tags, spp_col, tag_col){
   unique_tags <- unique(all_tags)
   
   for (t in 1:length(unique_tags)){
+    
     #only run on ear and toe tags, pit tags are very unlikely to be duplicated
+    if (nchar(tags[t]) < 6 | tags[t] %in% no_PITtags$tag){  
       tmp <- which(dat$tag == tags[t])
       
       # if indiv was captured multiple times  
@@ -234,7 +236,7 @@ is_duplicate_tag = function(dat, tags, spp_col, tag_col){
               }
             }
           }
-        }}}
+        }}}}
   info = list(data = dat, bad = flagged_rats)
   return (info)
 }
