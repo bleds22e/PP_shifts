@@ -155,7 +155,7 @@ is_dead = function(dat, tags, spp_col, tag_col){
 }
 
 
-is_duplicate_tag = function(dat, tags, sex_col, spp_col, tag_col){
+is_duplicate_tag = function(dat, tags, spp_col, tag_col){
   # check the min to max year for a given tag. 
   # If > 4, considered suspicious
   # If multiple species, considered suspicious

@@ -21,7 +21,7 @@ repo_data_to_Supp_data <- function(data, species_data){
   data$plot_type = NA
   
   # remove unneeded columns
-  data <- select(data, -recordID, -day, -note1, -age, -testes, -lactation, -hfl, 
+  data <- select(data, -recordID, -day, -note1, -age, -testes, -lactation, -hfl,
                  -(prevrt:note4))
   
   # reorganize columns
@@ -80,7 +80,7 @@ clean_data_for_capture_histories <- function(data){
   # necessary if using data data (ear and toe tags)
   # returns the dataset with new IDs for those that can easily be sorted out based on sex and year
   tags = unique(data4$tag)
-  dups = is_duplicate_tag(data4, tags, 10, 9, 16) #check to see if can separate tags based
+  dups = is_duplicate_tag(data4, tags, 9, 16) #check to see if can separate tags based
   
   #eliminate bad data based on tags identified in dups$bad
   duptags = unique(dups$bad$tag)
