@@ -27,13 +27,21 @@ starred_tags = function(dat, tags, spp_col, tag_col){
   # tags with multiple rows are sorted by species, then checked for *
   # if a * exists, then each time it is given a new unique tag, that ends with "s" for "star" (from note2 column)
   
+  # find tags that are 6 characters but are toe tags, not PIT tags
+  tags_6 <- dat[nchar(dat$tag) >= 6,] # tags with 6 or more characters
+  no_PITtags <- tags_6 %>% 
+    filter(stringr::str_detect(tag, "[HIMNOPRSTUX]")) %>% # have characters not found in PIT tags
+    filter(grepl('\\d{4}\\w{2}', tag)) %>% # have 4 digits followed by 2 characters (unlikely to be a PIT tag)
+    select(tag)
+  
   numcount = 1
   
   for (t in 1:length(tags)){
     
     # only run on ear and toe tags, pit tags are very unlikely to be duplicated
     
-    if (nchar(tags[t]) < 6){  #| tags[t] %in% no_PITtags
+    
+    if (nchar(tags[t]) < 6 | tags[t] %in% no_PITtags$tag){  
       tmp <- which(dat$tag == tags[t])
       
       # if indiv was captured multiple times  
