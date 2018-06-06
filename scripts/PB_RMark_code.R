@@ -295,19 +295,19 @@ mark_trmt_all = create_trmt_hist(PP_only, tags_all, periods_all) # create one gi
 # for future use:
 # write.csv(mark_trmt_pre, "data/PP_capture_history_prePBmax.csv")
 # write.csv(mark_trmt_post, "data/PP_capture_history_postPBmax.csv")
-# write.csv(mark_trmt_all, "data/PP_capture_history_all.csv")
+# write.csv(mark_trmt_all, "data/PP_capture_history_all_20180606.csv")
 
 #---------------------------------------------------------------
 # Run MARK analyses on all PPs
 #---------------------------------------------------------------
 
 # load in capture histories 
-#all <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/MARKdata/PP_capture_history_all.csv")
-#mark_trmt_all <- read.csv(text = all, header = TRUE, stringsAsFactors = FALSE)
+all <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/MARKdata/PP_capture_history_all.csv")
+mark_trmt_all <- read.csv(text = all, header = TRUE, stringsAsFactors = FALSE)
 
 # prep data for RMark
 all_ms <- select(mark_trmt_all, captures) %>% rename(ch = captures)
-first_PP <- PB_max - 1
+first_PP <- 118
 
 # Process data
 ms.pr = process.data(all_ms, begin.time = first_PP, model = "Multistrata")
