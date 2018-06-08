@@ -48,20 +48,22 @@ test_that("Check id_unknowns() function", {
   expect_equal(nrow(dplyr::filter(testdat2, grepl('\\d{7}', tag))), 4)
 })
 
-
 test_that("Check starred_tags() function", {
-  expect_equal(rownames(testdat2[str_detect(starred_tags(testdat2, tags2, 9, 16)$tag, 's'),]), 
-               c("1","2","3","12","22","45","47"))
+  expect_equal(length(unique(starred_tags(testdat2, tags2, 9, 16)$tag)), 37)
 })
 
 test_that("Check is_dead() function", {
-  expect_equal(rownames(testdat3[str_detect(is_dead(testdat3, tags3, 9, 16)$tag, 'm'),]), 
-               c("8","9","10","11","49"))
+  expect_equal(length(unique(is_dead(testdat3, tags3, 9, 16)$tag)), 38)
 })
 
 test_that("Check is_duplicate_tag() function", {
-  
+  expect_equal(unique(is_duplicate_tag(testdat4, tags4, 9, 16)$bad$tag), c("0003DM", "2509"))
 })
+
+test_that("Check same_period() function", {
+  expect_equal(unique(same_period(testdat5, tags5)$tag), c("2520", "0004DM9s"))
+})
+
 
 # Not working below this line --------------------------------------------------------------------
 
