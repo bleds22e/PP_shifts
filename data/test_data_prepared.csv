@@ -44,6 +44,7 @@ year,month,period,Treatment_Number,plot,stake,east,north,species,sex,reprod,vagi
 1998,1,239,2,19,32,NA,NA,PB,F,Z,NA,NA,NA,30,NA,,0,NA,,Krat_Exclosure
 1998,1,239,1,17,43,NA,NA,OT,F,Z,NA,NA,NA,22,,,0,NA,,Control
 1998,2,240,1,2,41,NA,NA,DM,F,Z,NA,NA,NA,41,2527,,0,NA,,Control
+1998,2,240,1,17,66,NA,NA,OL,F,Z,NA,NA,NA,24,2868,,0,NA,,Control
 1998,5,243,1,12,11,NA,NA,DM,F,Z,NA,NA,NA,41,0004DM,,NA,NA,,Control
 1999,5,255,3,5,52,NA,NA,PP,F,Z,NA,NA,NA,20,2527,*,NA,NA,,Removal
 2000,2,262,1,12,11,NA,NA,DM,F,Z,NA,NA,NA,41,0004DM,*,NA,NA,,Control
