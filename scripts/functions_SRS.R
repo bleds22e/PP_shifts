@@ -275,15 +275,6 @@ find_bad_data2 = function(dat, tags, sex_col, spp_col){
     tmp <- which(dat$tag == tags[t])
     
     if (nrow(dat[tmp,]) > 1) {    # if indiv was captured multiple times
-      # sex_list = dat[tmp,sex_col]
-      # sex = sex_list[1]
-      # for (i in 2:length(sex_list)){  # check for consistent sex
-      #   if (!is.na(sex_list[i])){
-      #     if (sex_list[i] != sex) {
-      #       outcount = outcount + 1
-      #       flagged_rats[outcount,] <- c(tags[t], "sex", nrow(dat[tmp,]))
-      #       break
-      #     }}}
       spp_list = dat[tmp,spp_col]
       spp = spp_list[1]
       for (s in 2:length(spp_list)){  # check for consistent species
@@ -305,8 +296,6 @@ subsetDat = function(dataset){
   flags = find_bad_data2(dataset, tags, 10, 9)   # list of flagged data
   
   #first, mark all uncertain or unmarked sex as "U" for unknown
-  badsextags = unique(flags[which(flags$reason == "sex"),1])
-  dataset[which(dataset$tag %in% badsextags),10] = "U"
   dataset[which(dataset$sex %in% c("", "P", "Z")),10] = "U" #get rid of other weird typos in sex column
   
   #get rid of results where we don't know the species for sure
@@ -315,11 +304,12 @@ subsetDat = function(dataset){
   
   #don't use negative period numbers and periods with only one day of trapping
   #TODO: add periods from 1980-1999 that were incompletely sampled
-  dataset = subset(dataset, period != 111 & period != 237 & period != 241 &
-                     period != 267 & period != 277 & period != 278 & period != 283 &
-                     period != 284 & period != 300 & period != 311 & period != 313 &
-                     period != 314 & period != 318 & period != 321 & period != 323 &
-                     period != 337 & period != 339 & period != 344 & period != 351)
+  # dataset = subset(dataset, period != 111 & period != 237 & period != 241 &
+  #                    period != 267 & period != 277 & period != 278 & period != 283 &
+  #                    period != 284 & period != 300 & period != 311 & period != 313 &
+  #                    period != 314 & period != 318 & period != 321 & period != 323 &
+  #                    period != 337 & period != 339 & period != 344 & period != 351)
+  # ^^^ check these against what gets removed in the beginning of the code
   return (dataset)
 }
 
@@ -358,16 +348,7 @@ create_trmt_hist = function(dat, tags, prd){
     
     tmp2<-which(dat$tag==tags[t])
     censored = 1
-    
-    #for (irow in nrow(dat[tmp2,])){
-    #  if (dat[tmp2, 4] == 3) {
-    #    censored = -1
-    #    break}}
-    
-    #spp = unique(dat[which(dat$tag == tags[t]), 9])
-    #sex = unique(dat[which(dat$tag == tags[t]), 10])
-    #avg_mass = mean(dat[which(dat$tag==tags[t]), 15])
-    
+
     outcount = outcount + 1
     MARK_data[outcount,] <- c(capture_history, censored, tags[t])
     

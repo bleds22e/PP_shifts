@@ -63,8 +63,9 @@ test_that("Check is_duplicate_tag() function", {
 test_that("Check same_period() function", {
   expect_equal(unique(same_period(testdat5, tags5)$tag), c("2520", "0004DM9s"))
 })
+ 
+testthat("Check SubsetDat() function", { # add a row in which spp is undetermined for this
+  expect_equal()
+})
 
-
-# Not working below this line --------------------------------------------------------------------
-
-
+# what about create_trmt_history function? Should that have a test?
