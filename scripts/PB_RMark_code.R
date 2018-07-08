@@ -24,7 +24,7 @@ source("scripts/functions_EKB.r")
 # DATA FILES
 
 # rodent file from repo
-rodents <- getURL("https://raw.githubusercontent.com/weecology/PortalData/master/Rodents/Portal_rodent.csv") 
+rodents <- getURL("https://raw.githubusercontent.com/weecology/PortalData/master/Rodents/Portal_rodent.csv")
 rdat <- read.csv(text = rodents, header = TRUE, na.strings = c(""), stringsAsFactors = FALSE)
 
 # species file
@@ -42,14 +42,13 @@ tdat <- read.csv(text = trapping, header = TRUE, stringsAsFactors = FALSE)
 ##########################################################
 
 #---------------------------------------------------------
-# Clean the Data 
+# Clean the Data
 #---------------------------------------------------------
 
 # make it match Sarah Supp's data structure to use her code
 all <- repo_data_to_Supp_data(rdat, sdat)
- 
+
 # Find and Remove Periods with One Day of Trapping
-#   should I actually do this or just leave them in?
 
 # summarize trapping
 trap_count <- tdat %>%
@@ -59,23 +58,23 @@ bad_periods <- filter(trap_count, count < 20) # periods that weren't fully trapp
 bad_periods <- as.list(bad_periods$period)
 
 # don't use periods with only one day of trapping
-all_no_incomplete = all[-which(all$period %in% bad_periods),] # need to change this;
+all_no_incomplete = all[-which(all$period %in% bad_periods),] # need to change this?
 
 #---------------------------------------------------------
 # Figure out PB "burn in" period
 #---------------------------------------------------------
 
 # get PB per plot per period
-PB <- all %>% filter(species == 'PB') 
-PB_plot_count <- PB %>% 
-  select(period, Treatment_Number, plot) %>% 
-  group_by(period, Treatment_Number) %>% 
+PB <- all %>% filter(species == 'PB')
+PB_plot_count <- PB %>%
+  select(period, Treatment_Number, plot) %>%
+  group_by(period, Treatment_Number) %>%
   summarise(count = n_distinct(plot))
 
 PB_min <- min(PB$period) # when PB first show up
 PB_max <- min(PB_plot_count$period[PB_plot_count$count == 8]) #first time PBs are found in all 8 krat exclosures
 
-# PB decline?
+# PB decline
 # 2008 (prd 366) = last time caught in all 8 krat exclosures
 # 2010 (prd 388) = first time not caught during a survey since PB_max
 
@@ -83,27 +82,27 @@ PB_max <- min(PB_plot_count$period[PB_plot_count$count == 8]) #first time PBs ar
 # PPs IN THE CONTEXT OF PBs
 ############################################################
 
-no_removals <- all_no_incomplete %>% filter(Treatment_Number != 3) 
+no_removals <- all_no_incomplete %>% filter(Treatment_Number != 3)
 
 #----------------------------------------------------------
 # Average Number of PP Individual per Plot per Year
 #----------------------------------------------------------
 
 avg_by_year <- no_removals %>% # count of individuals in each plot
-  filter(species == 'PP' | species == 'PB') %>% 
-  group_by(plot, year, species, plot_type) %>% 
-  summarise(count = n()) %>% 
+  filter(species == 'PP' | species == 'PB') %>%
+  group_by(plot, year, species, plot_type) %>%
+  summarise(count = n()) %>%
   ungroup()
 avg_by_year <- avg_by_year %>% # average by treatment type per year
-  group_by(year, species, plot_type) %>%  
-  summarize(avg_indiv = mean(count))      
+  group_by(year, species, plot_type) %>%
+  summarize(avg_indiv = mean(count))
 
 # fix plot types for plotting
 avg_by_year_plotting <- avg_by_year
 avg_by_year_plotting$plot_type <- plyr::revalue(avg_by_year$plot_type, c("Krat_Exclosure" = "Kangaroo Rat Exclosure"))
 
 # by species
-ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = species, group = species)) + 
+ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = species, group = species)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
@@ -112,7 +111,7 @@ ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = species, group
            ymin = -Inf, ymax = Inf) +
   geom_line() +
   geom_point() +
-  facet_wrap( ~ plot_type, nrow = 2) + 
+  facet_wrap( ~ plot_type, nrow = 2) +
   xlab("Year") +
   ylab("Avg. Inidividuals per Year") +
   labs(color = "Species") +
@@ -120,7 +119,7 @@ ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = species, group
 #ggsave("figures/PP_PB_by_plottype.png")
 
 # by species
-ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = plot_type, group = plot_type)) + 
+ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = plot_type, group = plot_type)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
@@ -129,7 +128,7 @@ ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = plot_type, gro
            ymin = -Inf, ymax = Inf) +
   geom_line() +
   geom_point() +
-  facet_wrap( ~ species, nrow = 2) + 
+  facet_wrap( ~ species, nrow = 2) +
   xlab("Year") +
   ylab("Avg. Inidividuals per Year") +
   labs(color = "Plot Type") +
@@ -142,7 +141,7 @@ ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = plot_type, gro
 
 # get data ready to plot
 avg_by_year_spread <- spread(avg_by_year, plot_type, avg_indiv)
-avg_by_year_spread <- avg_by_year_spread[which(complete.cases(avg_by_year_spread)),] 
+avg_by_year_spread <- avg_by_year_spread[which(complete.cases(avg_by_year_spread)),]
 
 # get only the PPs
 PP_only <- avg_by_year_spread[avg_by_year_spread$species == 'PP',]
@@ -167,9 +166,9 @@ colnames(PP_linear_model) <- c("year", "PP_predicted", "PP_residuals")
 
 # get PB abundance
 PB_avg_year <- select(avg_by_year, year, species, avg_indiv) %>%
-  group_by(year) %>% 
-  filter(species == 'PB') %>% 
-  select(-species) %>% 
+  group_by(year) %>%
+  filter(species == 'PB') %>%
+  select(-species) %>%
   summarise(PB_avg_indiv = sum(avg_indiv))
 # remove years where no PBs are present
 PP_and_PB_innerjoin <- inner_join(PB_avg_year, PP_linear_model, by = "year")
@@ -188,12 +187,12 @@ anova(PP_PB_model_linear, PP_PB_model_linear_AR1)
 
 # plot the regression (using original model)
 
-plot1 <- 
+plot1 <-
   ggplot(data = PP_and_PB_innerjoin, aes(x = PB_avg_indiv, y = PP_residuals)) +
   geom_hline(aes(yintercept = 0), color = 'black')+
   #geom_smooth(aes(y = fitted(PP_PB_model_linear)),  size = 1, color = "black") +
   stat_smooth(method = 'lm', formula = y ~ x, size = 2, color = "black") +
-  geom_point(size = 3) + 
+  geom_point(size = 3) +
   xlab("Average PB per Plot by Year") +
   ylab("PP Residuals for 1:1 Line") +
   ggtitle("C") +
@@ -239,8 +238,8 @@ plot2 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PP_residuals)) +
 
 # Average PB individuals through time
 plot3 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PB_avg_indiv)) +
-  annotate(geom = "rect", fill = "grey", alpha = 0.4, 
-           xmin = 1995, xmax = 1998, 
+  annotate(geom = "rect", fill = "grey", alpha = 0.4,
+           xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 2008, xmax = 2010,
@@ -280,7 +279,7 @@ PP_only <- filter(all_clean, species == 'PP')
 #post_PB_max <- PP_only[(PP_only$period >= PB_max),]
 
 ### Create a set of capture histories by treatment and by plot
-#tags_pre = unique(pre_PB_max$tag) 
+#tags_pre = unique(pre_PB_max$tag)
 #tags_post = unique(post_PB_max$tag)
 tags_all = unique(PP_only$tag)
 
@@ -301,8 +300,8 @@ mark_trmt_all = create_trmt_hist(PP_only, tags_all, periods_all) # create one gi
 # Run MARK analyses on all PPs
 #---------------------------------------------------------------
 
-# load in capture histories 
-all <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/MARKdata/PP_capture_history_all.csv")
+# load in capture histories
+all <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/MARKdata/PP_capture_history_all20180606.csv")
 mark_trmt_all <- read.csv(text = all, header = TRUE, stringsAsFactors = FALSE)
 
 # prep data for RMark
@@ -330,7 +329,7 @@ ms.ddl$Psi$PB_time[ms.ddl$Psi$time %in% PB_time_after] = 1
 # Run the models and examine the output
 
 MarkViewer="open -a TextEdit" # edit to make results pop up on a Mac
-ms.results = run.ms(S_dot = NULL, 
+ms.results = run.ms(S_dot = NULL,
                     S_stratum = list(formula = ~ -1 + stratum + PB_time),
                     p_dot = list(formula = ~ 1),
                     p_stratum = NULL,
@@ -352,31 +351,31 @@ first_period <- setNames(data.frame(matrix(ncol = 21, nrow = 0)), names(PP_only)
 # create dataframe of only first period each tag is present
 for (i in 1:length(tags_all)){
   tmp <- PP_only[PP_only$tag == tags_all[i],] # rows for a given tag
-  tmp2 <- tmp[tmp$period == min(tmp$period),] # row with earliest period 
+  tmp2 <- tmp[tmp$period == min(tmp$period),] # row with earliest period
   first_period <- rbind(first_period, tmp2)   # add to new dataframe
 }
 
 # total number new PPs (avg plot sum by year)
-new_PP_per_plot <- first_period %>% 
-  filter(plot_type != "Removal") %>% 
-  group_by(plot, year, plot_type) %>% 
-  summarise(count = n()) %>% 
-  ungroup() 
-new_PP_per_plot <- new_PP_per_plot %>% 
-  group_by(year, plot_type) %>% 
+new_PP_per_plot <- first_period %>%
+  filter(plot_type != "Removal") %>%
+  group_by(plot, year, plot_type) %>%
+  summarise(count = n()) %>%
+  ungroup()
+new_PP_per_plot <- new_PP_per_plot %>%
+  group_by(year, plot_type) %>%
   summarise(avg_plot_sum_by_year = mean(count), se = plotrix::std.error(count))
 
 # plot new PPs
-new_PP_per_plot <- new_PP_per_plot %>% 
-  mutate(ymin = avg_plot_sum_by_year - se, 
-         ymax = avg_plot_sum_by_year + se) %>% 
+new_PP_per_plot <- new_PP_per_plot %>%
+  mutate(ymin = avg_plot_sum_by_year - se,
+         ymax = avg_plot_sum_by_year + se) %>%
   replace_na(list(avg_plot_sum_by_year = 0, se = 0, ymin = 0, ymax = 0))
 
 # rename plot_treatments for plotting
 new_PP_per_plot$plot_type <- plyr::revalue(new_PP_per_plot$plot_type, c("Krat_Exclosure" = "Kangaroo Rat Exclosure"))
 
-plot6 <- ggplot(new_PP_per_plot, aes(x = year, 
-                                     y = avg_plot_sum_by_year, 
+plot6 <- ggplot(new_PP_per_plot, aes(x = year,
+                                     y = avg_plot_sum_by_year,
                                      color = plot_type,
                                      group = plot_type)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
@@ -399,7 +398,7 @@ plot6 <- ggplot(new_PP_per_plot, aes(x = year,
         axis.text.x = element_text(face = "bold", size = 12),
         axis.text.y = element_text(face = "bold", size = 12),
         legend.position = "bottom")
-#ggsave("figures/ms_figures/new_PP_per_year.png", plot6, width = 6, height = 4.5)  
+#ggsave("figures/ms_figures/new_PP_per_year.png", plot6, width = 6, height = 4.5)
 
 
 #############################################################
@@ -409,10 +408,10 @@ plot6 <- ggplot(new_PP_per_plot, aes(x = year,
 # BIOMASS
 
 # download biomass data by plot from portalr
-biomass_data <- portalr:::get_rodent_data(path = "repo", level = "Plot", output = "biomass")
+biomass_data <- portalr::get_rodent_data(path = "repo", level = "Plot", output = "biomass")
 
 # select certain treatments and filter by time
-biomass_dat <- biomass_data %>% 
+biomass_dat <- biomass_data %>%
   filter(treatment == "control" | treatment == "exclosure", period >= 118 & period <= 433) # get the right time periods
 
 # add a year column for later summarization
@@ -425,37 +424,20 @@ for (i in 1:nrow(biomass_dat)){
 }
 
 #------------------------------------------------------------
-# Biomass Against the 1:1 line
+# Biomass Ratios
 #------------------------------------------------------------
 
 # sum across rows and rename column
-biomass_dat_rowSums <- as.data.frame(rowSums(biomass_dat[,4:24])) 
-colnames(biomass_dat_rowSums) <- c("rowSums") 
+biomass_dat_rowSums <- as.data.frame(rowSums(biomass_dat[,4:24]))
+colnames(biomass_dat_rowSums) <- c("rowSums")
 
 # summarise biomass to get total by period and plot type
-biomass_total <- cbind(biomass_dat, biomass_dat_rowSums) %>% 
-  group_by(year, treatment) %>% 
+biomass_total <- cbind(biomass_dat, biomass_dat_rowSums) %>%
+  group_by(year, treatment) %>%
   summarise(totals = sum(rowSums))
 
 # change the data structure to run the linear model
 biomass_spread <- tidyr::spread(biomass_total, treatment, totals)
-
-# run linear model against the 1:1 line
-model_1to1 <- lm((biomass_spread$exclosure - biomass_spread$control) ~ 0)
-biomass_spread$residuals <- residuals(model_1to1)
-plot(x = biomass_spread$year, y = biomass_spread$residuals)
-
-ggplot(biomass_spread, aes(x = year, y = residuals)) +
-  annotate(geom = "rect", fill = "grey", alpha = 0.4,
-           xmin = 1995, xmax = 1998,
-           ymin = -Inf, ymax = Inf) +
-  geom_point() +
-  stat_smooth(method = 'lm', formula = y ~ x + I(x^2)) +
-  theme_bw()
-
-#------------------------------------------------------------
-# Biomass Ratios
-#------------------------------------------------------------
 
 # ratio
 biomass_ratio <- biomass_spread %>% mutate(EX_to_CO_ratio = exclosure/control)
@@ -469,7 +451,6 @@ plot5 <- ggplot(biomass_ratio, aes(year, EX_to_CO_ratio, group = 1))+
            ymin = -Inf, ymax = Inf) +
   geom_point(size = 3) +
   geom_line()+
-  xlab("Year") +
   ylab("Kangaroo Rat Exlcosure:Control Biomass") +
   theme_classic() +
   theme(panel.border = element_rect(fill = NA, colour = "black"),
@@ -478,4 +459,4 @@ plot5 <- ggplot(biomass_ratio, aes(year, EX_to_CO_ratio, group = 1))+
         axis.text.x = element_text(face = "bold", size = 12),
         axis.text.y = element_text(face = "bold", size = 12),
         plot.margin = margin(10, 15, 10, 10))
-#ggsave("figures/ms_figures/biomass_ratio.png", plot5, width = 5.5, height = 4.5)  
+#ggsave("figures/ms_figures/biomass_ratio.png", plot5, width = 5.5, height = 4.5)
