@@ -49,7 +49,7 @@ plot1 <- ggplot(plot_rmark[(plot_rmark$metric == "S"),], color = Treatment) +
         axis.text.x = element_text(face = "bold", size = 12),
         axis.text.y = element_text(face = "bold", size = 12))
 
-ggsave("figures/Survival.png")
+#ggsave("figures/Survival.png")
 
 plot2 <- ggplot(plot_rmark[(plot_rmark$metric == "Psi"),]) +
   geom_pointrange(aes(x = time, y = estimate, 
@@ -66,6 +66,7 @@ plot2 <- ggplot(plot_rmark[(plot_rmark$metric == "Psi"),]) +
         axis.text.x = element_text(face = "bold", size = 12),
         axis.text.y = element_text(face = "bold", size = 12))
 
-ggsave("figures/Psi.png")
+#ggsave("figures/Psi.png")
+
 plot3 <- plot1 + plot2
-ggsave("figures/S_and_Psi.png", plot3)
+#ggsave("figures/S_and_Psi.png", plot3)
