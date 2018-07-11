@@ -15,6 +15,7 @@ library(forecast)
 library(nlme)
 library(patchwork)
 library(rapportools)
+
 source("scripts/functions_SRS.r")
 source("scripts/functions_EKB.r")
 
@@ -297,19 +298,20 @@ mark_trmt_all = create_trmt_hist(PP_only, tags_all, periods_all) # create one gi
 # for future use:
 # write.csv(mark_trmt_pre, "data/PP_capture_history_prePBmax.csv")
 # write.csv(mark_trmt_post, "data/PP_capture_history_postPBmax.csv")
-# write.csv(mark_trmt_all, "data/PP_capture_history_all_20180606.csv")
+write.csv(mark_trmt_all, "data/PP_capture_history_all_20180711.csv")
 
 #---------------------------------------------------------------
 # Run MARK analyses on all PPs
 #---------------------------------------------------------------
 
 # load in capture histories
-all <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/MARKdata/PP_capture_history_all_20180606.csv")
+all <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/PP_capture_history_all_20180711.csv")
 mark_trmt_all <- read.csv(text = all, header = TRUE, stringsAsFactors = FALSE)
 
 # prep data for RMark
-all_ms <- select(mark_trmt_all, captures) %>% rename(c("captures" = "ch"))
-first_PP <- 118
+all_ms <- select(mark_trmt_all, captures) %>% dplyr::rename("ch" = "captures")
+first_PP <- 123
+PB_max <- 233
 
 # Process data
 ms.pr = process.data(all_ms, begin.time = first_PP, model = "Multistrata")
@@ -318,7 +320,7 @@ ms.pr = process.data(all_ms, begin.time = first_PP, model = "Multistrata")
 ms.ddl = make.design.data(ms.pr)
 
 # add design covariates for PB era
-PB_time_after = as.factor(seq(PB_max, 435))
+PB_time_after = as.factor(seq(PB_max, 433))
 
 ms.ddl$S$PB_time = 0
 ms.ddl$S$PB_time[ms.ddl$S$time %in% PB_time_after] = 1
