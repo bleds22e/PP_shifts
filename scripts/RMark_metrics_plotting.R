@@ -51,11 +51,10 @@ plot1 <- ggplot(plot_rmark[(plot_rmark$metric == "S"),], color = Treatment) +
 
 #ggsave("figures/Survival.png")
 
-plot2 <- ggplot(plot_rmark[(plot_rmark$metric == "Psi"),]) +
-  geom_pointrange(aes(x = time, y = estimate, 
-                      ymin = (estimate - se), ymax = (estimate + se), 
+(plot2 <- ggplot(plot_rmark[(plot_rmark$metric == "Psi"),], aes(x = time, y = estimate)) +
+  geom_pointrange(aes(ymin = (estimate - se), ymax = (estimate + se), 
                       color = Treatment, shape = Treatment), 
-                  position = position_dodge(.1), size = 1, width = .2) +
+                      position = position_dodge(.1), size = 1) +
   scale_colour_manual(values = cbPalette) + 
   xlab(x_axis_title) +
   ylab("Transition Probability") +
@@ -64,7 +63,7 @@ plot2 <- ggplot(plot_rmark[(plot_rmark$metric == "Psi"),]) +
         axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
         axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
         axis.text.x = element_text(face = "bold", size = 12),
-        axis.text.y = element_text(face = "bold", size = 12))
+        axis.text.y = element_text(face = "bold", size = 12)))
 
 #ggsave("figures/Psi.png")
 
