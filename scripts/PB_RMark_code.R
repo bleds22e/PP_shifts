@@ -81,6 +81,11 @@ PB_max <- min(PB_plot_count$period[PB_plot_count$count == 8]) #first time PBs ar
 
 no_removals <- all_no_incomplete %>% filter(Treatment_Number != 3)
 
+# find number of periods per year
+prd_per_year <- no_removals %>% 
+  group_by(year) %>% 
+  summarise(prd_per_yr = n_distinct(period))
+
 #----------------------------------------------------------
 # Average Number of PP Individual per Plot per Year
 #----------------------------------------------------------
@@ -93,13 +98,15 @@ avg_by_year <- no_removals %>% # count of individuals in each plot
 avg_by_year <- avg_by_year %>% # average by treatment type per year
   group_by(year, species, plot_type) %>%
   summarize(avg_indiv = mean(count))
+avg_by_year <- right_join(avg_by_year, prd_per_year, by = "year") %>% 
+  mutate("avg_ind_per_prd" = avg_indiv/prd_per_yr)
 
 # fix plot types for plotting
 avg_by_year_plotting <- avg_by_year
 avg_by_year_plotting$plot_type <- plyr::revalue(avg_by_year$plot_type, c("Krat_Exclosure" = "KR Exclosure"))
 
 # by species
-ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = species, group = species)) +
+ggplot(avg_by_year_plotting, aes(x = year, y = avg_ind_per_prd, color = species, group = species)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
@@ -118,33 +125,36 @@ ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = species, group
 # PB by plot type
 
 PB_only <- filter(avg_by_year_plotting, species == "PB")
-ggplot(PB_only, aes(x = year, y = avg_indiv, color = plot_type, group = plot_type)) +
-  annotate(geom = "rect", fill = "grey", alpha = 0.4,
-           xmin = 1995, xmax = 1998,
-           ymin = -Inf, ymax = Inf) +
-  annotate(geom = "rect", fill = "grey", alpha = 0.4,
-           xmin = 2008, xmax = 2010,
-           ymin = -Inf, ymax = Inf) +
+ggplot(PB_only, aes(x = year, y = avg_ind_per_prd, color = plot_type, group = plot_type)) +
+  # annotate(geom = "rect", fill = "grey", alpha = 0.4,
+  #          xmin = 1995, xmax = 1998,
+  #          ymin = -Inf, ymax = Inf) +
+  # annotate(geom = "rect", fill = "grey", alpha = 0.4,
+  #          xmin = 2008, xmax = 2010,
+  #          ymin = -Inf, ymax = Inf) +
   geom_line() +
   geom_point(size = 2) +
   scale_color_manual(values = cbPalette) +
   xlab("Year") +
-  ylab("Avg. Individuals per Year") +
+  ylab("Avg. Individuals") +
   labs(color = "Plot Type") +
   theme_classic() +
   theme(panel.border = element_rect(fill = NA, colour = "black"),
         axis.title.x = element_text(face = "bold", size = 14),
         axis.title.y = element_text(face = "bold", size = 14),
         axis.text.x = element_text(face = "bold", size = 12),
-        axis.text.y = element_text(face = "bold", size = 12))
-#ggsave("figures/PB_by_plottype.png")
+        axis.text.y = element_text(face = "bold", size = 12),
+        legend.position = "bottom")
+#ggsave("figures/ms_figures/PB_by_plottype_bottomlegend.png")
 
 #-----------------------------------------------------------
 # Residuals Against the 1:1 line
 #-----------------------------------------------------------
 
 # get data ready to plot
-avg_by_year_spread <- spread(avg_by_year, plot_type, avg_indiv)
+avg_by_year_spread <- avg_by_year %>% 
+  select(year, species, plot_type, avg_ind_per_prd) %>% 
+  spread(plot_type, avg_ind_per_prd)
 avg_by_year_spread <- avg_by_year_spread[which(complete.cases(avg_by_year_spread)),]
 
 # get only the PPs
@@ -168,16 +178,13 @@ colnames(PP_linear_model) <- c("year", "PP_predicted", "PP_residuals")
 # Plot PP Residuals Against PB Abundance
 #----------------------------------------------------------
 
-# get PB abundance
-PB_avg_year <- select(avg_by_year, year, species, avg_indiv) %>%
-  group_by(year) %>%
-  filter(species == 'PB') %>%
-  select(-species) %>%
-  summarise(PB_avg_indiv = sum(avg_indiv))
 # remove years where no PBs are present
-PP_and_PB_innerjoin <- inner_join(PB_avg_year, PP_linear_model, by = "year")
+PB_only <- PB_only %>% 
+  select(year, avg_ind_per_prd) %>% 
+  summarise(PB_avg_indiv = sum(avg_ind_per_prd))
+PP_and_PB_innerjoin <- inner_join(PB_only[, c(-2)], PP_linear_model, by = "year")
 
-# define x and y for the polynomial model
+# define x and y for the linear model
 x2 = PP_and_PB_innerjoin$PB_avg_indiv
 y2 = PP_and_PB_innerjoin$PP_residuals
 
@@ -191,11 +198,11 @@ anova(PP_PB_model_linear, PP_PB_model_linear_AR1)
 
 # plot the regression (using original model)
 
-plot1 <-
+(plot1 <-
   ggplot(data = PP_and_PB_innerjoin, aes(x = PB_avg_indiv, y = PP_residuals)) +
   geom_hline(aes(yintercept = 0), color = 'black')+
   #geom_smooth(aes(y = fitted(PP_PB_model_linear)),  size = 1, color = "black") +
-  stat_smooth(method = 'lm', formula = y ~ x, size = 2, color = "black") +
+  stat_smooth(method = 'lm', size = 2, color = "black") + #### WHY IS THIS NOT WORKING? ####
   geom_point(size = 3) +
   xlab("Average PB per Plot by Year") +
   ylab("PP Residuals for 1:1 Line") +
@@ -207,7 +214,7 @@ plot1 <-
         axis.title.y = element_text(face = "bold", size = 14),
         axis.text.x = element_text(face = "bold", size = 12),
         axis.text.y = element_text(face = "bold", size = 12),
-        plot.margin = margin(l = 25))
+        plot.margin = margin(l = 25)))
 #ggsave("figures/ms_figures/PP_residuals_PB_abund_notitle.png", plot1, width = 5, height = 4.5)
 
 #-----------------------------------------------------------
@@ -215,11 +222,11 @@ plot1 <-
 #-----------------------------------------------------------
 
 # get all years in which PPs are present
-PP_and_PB_fulljoin <- full_join(PP_linear_model, PB_avg_year, by = "year")
+PP_and_PB_fulljoin <- full_join(PP_linear_model, PB_only[,c(1,3)], by = "year")
 PP_and_PB_fulljoin[is.na(PP_and_PB_fulljoin)] <- 0 # to line up PB abundance for plotting
 
 # PP residuals through time
-plot2 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PP_residuals)) +
+(plot2 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PP_residuals)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
@@ -238,10 +245,10 @@ plot2 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PP_residuals)) +
         axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
         axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
         axis.text.x = element_text(face = "bold", size = 12),
-        axis.text.y = element_text(face = "bold", size = 12))
+        axis.text.y = element_text(face = "bold", size = 12)))
 
 # Average PB individuals through time
-plot3 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PB_avg_indiv)) +
+(plot3 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PB_avg_indiv)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
@@ -259,11 +266,11 @@ plot3 <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PB_avg_indiv)) +
         axis.title.x = element_blank(),
         axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
         axis.text.x = element_text(face = "bold", size = 12),
-        axis.text.y = element_text(face = "bold", size = 12))
+        axis.text.y = element_text(face = "bold", size = 12)))
 
 
 plot4 <- (plot3/plot2) | plot1
-#ggsave("figures/ms_figures/PB_patchwork_blackline.png", plot4, width = 12.5, height = 6)
+ggsave("figures/ms_figures/PB_patchwork_blackline.png", plot4, width = 12.5, height = 6)
 
 
 ############################################################
