@@ -7,7 +7,6 @@
 # install portalr if not already done
 #devtools::install_github("weecology/portalr")
 
-# libraries
 library(portalr)
 library(RCurl)
 library(RMark)
@@ -16,10 +15,8 @@ library(forecast)
 library(nlme)
 library(patchwork)
 library(rapportools)
-
 source("scripts/functions_SRS.r")
 source("scripts/functions_EKB.r")
-
 
 # DATA FILES
 
@@ -34,7 +31,6 @@ sdat <- read.csv(text = species, header = TRUE, na.strings = c(""), stringsAsFac
 # trapping file from repo
 trapping <- getURL("https://raw.githubusercontent.com/weecology/PortalData/master/Rodents/Portal_rodent_trapping.csv")
 tdat <- read.csv(text = trapping, header = TRUE, stringsAsFactors = FALSE)
-
 
 
 ##########################################################
@@ -91,7 +87,7 @@ no_removals <- all_no_incomplete %>% filter(Treatment_Number != 3)
 avg_by_year <- no_removals %>% # count of individuals in each plot
   filter(species == 'PP' | species == 'PB') %>%
   group_by(plot, year, species, plot_type) %>%
-  summarise(count = n()) %>%
+  summarise(count = n(species)) %>%
   ungroup()
 avg_by_year <- avg_by_year %>% # average by treatment type per year
   group_by(year, species, plot_type) %>%
@@ -99,7 +95,7 @@ avg_by_year <- avg_by_year %>% # average by treatment type per year
 
 # fix plot types for plotting
 avg_by_year_plotting <- avg_by_year
-avg_by_year_plotting$plot_type <- plyr::revalue(avg_by_year$plot_type, c("Krat_Exclosure" = "Kangaroo Rat Exclosure"))
+avg_by_year_plotting$plot_type <- plyr::revalue(avg_by_year$plot_type, c("Krat_Exclosure" = "KR Exclosure"))
 
 # by species
 ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = species, group = species)) +
@@ -118,8 +114,10 @@ ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = species, group
   theme_classic()
 #ggsave("figures/PP_PB_by_plottype.png")
 
-# by species
-ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = plot_type, group = plot_type)) +
+# PB by plot type
+
+PB_only <- filter(avg_by_year_plotting, species == "PB")
+ggplot(PB_only, aes(x = year, y = avg_indiv, color = plot_type, group = plot_type)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
@@ -127,13 +125,18 @@ ggplot(avg_by_year_plotting, aes(x = year, y = avg_indiv, color = plot_type, gro
            xmin = 2008, xmax = 2010,
            ymin = -Inf, ymax = Inf) +
   geom_line() +
-  geom_point() +
-  facet_wrap( ~ species, nrow = 2) +
+  geom_point(size = 2) +
+  scale_color_manual(values = cbPalette) +
   xlab("Year") +
-  ylab("Avg. Inidividuals per Year") +
+  ylab("Avg. Individuals per Year") +
   labs(color = "Plot Type") +
-  theme_classic()
-#ggsave("figures/PP_PB_by_species.png")
+  theme_classic() +
+  theme(panel.border = element_rect(fill = NA, colour = "black"),
+        axis.title.x = element_text(face = "bold", size = 14),
+        axis.title.y = element_text(face = "bold", size = 14),
+        axis.text.x = element_text(face = "bold", size = 12),
+        axis.text.y = element_text(face = "bold", size = 12))
+#ggsave("figures/PB_by_plottype.png")
 
 #-----------------------------------------------------------
 # Residuals Against the 1:1 line
@@ -301,11 +304,11 @@ mark_trmt_all = create_trmt_hist(PP_only, tags_all, periods_all) # create one gi
 #---------------------------------------------------------------
 
 # load in capture histories
-all <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/MARKdata/PP_capture_history_all20180606.csv")
+all <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/MARKdata/PP_capture_history_all_20180606.csv")
 mark_trmt_all <- read.csv(text = all, header = TRUE, stringsAsFactors = FALSE)
 
 # prep data for RMark
-all_ms <- select(mark_trmt_all, captures) %>% rename(ch = captures)
+all_ms <- select(mark_trmt_all, captures) %>% rename(c("captures" = "ch"))
 first_PP <- 118
 
 # Process data

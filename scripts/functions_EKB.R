@@ -99,7 +99,7 @@ clean_data_for_capture_histories <- function(data){
 }
 
 
-# will need to create MARK function
+# MARK function
 run.ms = function(S_dot = list(formula = ~ 1), 
                   S_stratum = list(formula =  ~ -1 + stratum + PB_time), 
                   p_dot = list(formula =  ~ 1), 
