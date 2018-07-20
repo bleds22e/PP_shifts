@@ -7,13 +7,12 @@ library(tidyverse)
 library(patchwork)
 cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
-rmark_results <- read.csv("data/top_model_summary.csv", stringsAsFactors = FALSE)
+rmark_results <- read.csv("data/MARKdata/MARK_SerenityRun/top_model_summary_20180712.csv", stringsAsFactors = FALSE)
 
 # DATA PREP #
 rmark_results$time = c("Before", "After", "Before", "After", "Before", "After", NA, 
                        "Before", "After", "Before", "After", "Before", "After",
                        "Before", "After", "Before", "After", "Before", "After")
-plot_rmark$time <- factor(plot_rmark$time, levels = c("Before", "After"))
 
 rmark_results$metric = rep("S", nrow(rmark_results))
 rmark_results$metric[7] = "p"
@@ -29,6 +28,7 @@ rmark_results$Treatment = c("Control", "Control", "KR Exclosure", "KR Exclosure"
 
 plot_rmark <- rmark_results %>% 
   filter(metric != "p", stratum == "A" | stratum == "B" | stratum == "AB" | stratum == "BA")
+plot_rmark$time <- factor(plot_rmark$time, levels = c("Before", "After"))
 
 # PLOTTING #
 
