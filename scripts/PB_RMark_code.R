@@ -1,5 +1,5 @@
-# Get Population Level PP Data
-# EKB, code modified from S. Supp and RMark examples
+# PP Shifts Paper
+# Ellen K. Bledsoe, with code from S. Supp
 # March 7, 2018
 
 # LIBRARIES and SOURCE CODE
@@ -69,11 +69,13 @@ PB_plot_count <- PB %>%
   summarise(count = n_distinct(plot))
 
 PB_min <- min(PB$period) # when PB first show up
-PB_max <- min(PB_plot_count$period[PB_plot_count$count == 8]) #first time PBs are found in all 8 krat exclosures
+PB_max <- min(PB_plot_count$period[PB_plot_count$count == 8]) 
+  #first time PBs are found in all 8 krat exclosures
 
 # PB decline
 # 2008 (prd 366) = last time caught in all 8 krat exclosures
 # 2010 (prd 388) = first time not caught during a survey since PB_max
+
 
 ############################################################
 # PPs IN THE CONTEXT OF PBs
@@ -105,24 +107,7 @@ avg_by_year <- right_join(avg_by_year, prd_per_year, by = "year") %>%
 avg_by_year_plotting <- avg_by_year
 avg_by_year_plotting$plot_type <- plyr::revalue(avg_by_year$plot_type, c("Krat_Exclosure" = "KR Exclosure"))
 
-# by species
-ggplot(avg_by_year_plotting, aes(x = year, y = avg_ind_per_prd, color = species, group = species)) +
-  annotate(geom = "rect", fill = "grey", alpha = 0.4,
-           xmin = 1995, xmax = 1998,
-           ymin = -Inf, ymax = Inf) +
-  annotate(geom = "rect", fill = "grey", alpha = 0.4,
-           xmin = 2008, xmax = 2010,
-           ymin = -Inf, ymax = Inf) +
-  geom_line() +
-  geom_point() +
-  facet_wrap( ~ plot_type, nrow = 2) +
-  xlab("Year") +
-  ylab("Avg. Inidividuals per Year") +
-  labs(color = "Species") +
-  theme_classic()
-#ggsave("figures/PP_PB_by_plottype.png")
-
-# PB by plot type
+# Plot PB by treatment
 
 PB_only <- filter(avg_by_year_plotting, species == "PB")
 ggplot(PB_only, aes(x = year, y = avg_ind_per_prd, color = plot_type, group = plot_type)) +
@@ -148,7 +133,7 @@ ggplot(PB_only, aes(x = year, y = avg_ind_per_prd, color = plot_type, group = pl
 #ggsave("figures/ms_figures/PB_by_plottype_bottomlegend.png")
 
 #-----------------------------------------------------------
-# Residuals Against the 1:1 line
+# Find Deviation from Equal PP Populations (1:1 line)
 #-----------------------------------------------------------
 
 # get data ready to plot
@@ -161,15 +146,12 @@ avg_by_year_spread <- avg_by_year_spread[which(complete.cases(avg_by_year_spread
 PP_only <- avg_by_year_spread[avg_by_year_spread$species == 'PP',]
 
 # linear model along a 1:1 line
-x = PP_only$Control
-y = PP_only$Krat_Exclosure
-against_1_to_1 = lm(y-x ~ 0)
+equal_PP_line = lm(PP_only$Krat_Exclosure - PP_only$Control ~ 0)
 
 # make new data frame with predicted and residuals
-
 year <- as.data.frame(unique(avg_by_year_spread$year))
-PP_predicted <- as.data.frame(predict(against_1_to_1))
-PP_residuals <- as.data.frame(residuals(against_1_to_1))
+PP_predicted <- as.data.frame(predict(equal_PP_line))
+PP_residuals <- as.data.frame(residuals(equal_PP_line))
 
 PP_linear_model <- bind_cols(year, PP_predicted, PP_residuals)
 colnames(PP_linear_model) <- c("year", "PP_predicted", "PP_residuals")
@@ -182,24 +164,24 @@ colnames(PP_linear_model) <- c("year", "PP_predicted", "PP_residuals")
 PB_only <- PB_only %>% 
   select(year, avg_ind_per_prd) %>% 
   summarise(PB_avg_indiv = sum(avg_ind_per_prd))
-PP_and_PB_innerjoin <- inner_join(PB_only[, c(-2)], PP_linear_model, by = "year")
+PP_PB_join <- inner_join(PB_only[, c(-2)], PP_linear_model, by = "year")
 
 # define x and y for the linear model
-x2 = PP_and_PB_innerjoin$PB_avg_indiv
-y2 = PP_and_PB_innerjoin$PP_residuals
+x = PP_PB_join$PB_avg_indiv
+y = PP_PB_join$PP_residuals
 
 # test for autoregressive structure
 auto.arima(PP_linear_model$PP_residuals)
 
 # build and compare models
-PP_PB_model_linear <- gls(y2 ~ x2)
-PP_PB_model_linear_AR1 <- gls(y2 ~ x2, correlation = corAR1(form = ~1))
+PP_PB_model_linear <- gls(PP_PB_join$PP_residuals ~ PP_PB_join$PB_avg_indiv)
+PP_PB_model_linear_AR1 <- gls(PP_PB_join$PP_residuals ~ PP_PB_join$PB_avg_indiv, 
+                              correlation = corAR1(form = ~1))
 anova(PP_PB_model_linear, PP_PB_model_linear_AR1)
 
 # plot the regression (using original model)
-
 (plot1 <-
-  ggplot(data = PP_and_PB_innerjoin, aes(x = PB_avg_indiv, y = PP_residuals)) +
+  ggplot(data = PP_PB_join, aes(x = PB_avg_indiv, y = PP_residuals)) +
   geom_hline(aes(yintercept = 0), color = 'black')+
   #geom_smooth(aes(y = fitted(PP_PB_model_linear)),  size = 1, color = "black") +
   stat_smooth(method = 'lm', size = 2, color = "black") + #### WHY IS THIS NOT WORKING? ####
@@ -282,43 +264,26 @@ all_clean <- clean_data_for_capture_histories(all)
 PP_only <- filter(all_clean, species == 'PP')
 
 #-----------------------------------------------------------
-# Create Capture Histories
+# Run MARK analyses on all PPs
 #-----------------------------------------------------------
 
-# make two different capture histories based on PB_max
-#pre_PB_max <- PP_only[(PP_only$period < PB_max),]
-#post_PB_max <- PP_only[(PP_only$period >= PB_max),]
-
-### Create a set of capture histories by treatment and by plot
-#tags_pre = unique(pre_PB_max$tag)
-#tags_post = unique(post_PB_max$tag)
-tags_all = unique(PP_only$tag)
-
-#periods_pre = seq(min(PP_only$period),(PB_max-1)) # include all periods, even those with no PPs
-#periods_post = seq(PB_max, max(PP_only$period))
-periods_all = seq(min(PP_only$period), max(PP_only$period))
-
-#mark_trmt_pre = create_trmt_hist(pre_PB_max, tags_pre, periods_pre) # create capture history before PB_max
-#mark_trmt_post = create_trmt_hist(post_PB_max, tags_post, periods_post) # create capture history after PB_max
-mark_trmt_all = create_trmt_hist(PP_only, tags_all, periods_all) # create one giant capture history
+# Create a set of capture histories by treatment and by plot if needed
+# tags_all = unique(PP_only$tag)
+# periods_all = seq(min(PP_only$period), max(PP_only$period))
+# mark_trmt_all = create_trmt_hist(PP_only, tags_all, periods_all) 
 
 # for future use:
 # write.csv(mark_trmt_pre, "data/PP_capture_history_prePBmax.csv")
 # write.csv(mark_trmt_post, "data/PP_capture_history_postPBmax.csv")
-write.csv(mark_trmt_all, "data/PP_capture_history_all_20180711.csv")
+# write.csv(mark_trmt_all, "data/PP_capture_history_all_20180711.csv")
 
-#---------------------------------------------------------------
-# Run MARK analyses on all PPs
-#---------------------------------------------------------------
-
-# load in capture histories
+# load in capture histories if already created
 all <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/PP_capture_history_all_20180711.csv")
 mark_trmt_all <- read.csv(text = all, header = TRUE, stringsAsFactors = FALSE)
 
 # prep data for RMark
 all_ms <- select(mark_trmt_all, captures) %>% dplyr::rename("ch" = "captures")
-first_PP <- 123
-PB_max <- 233
+first_PP <- 123 # define in reference to other dataframe #123
 
 # Process data
 ms.pr = process.data(all_ms, begin.time = first_PP, model = "Multistrata")
@@ -341,17 +306,78 @@ ms.ddl$Psi$PB_time[ms.ddl$Psi$time %in% PB_time_after] = 1
 # Run the models and examine the output
 
 MarkViewer="open -a TextEdit" # edit to make results pop up on a Mac
+
+  ### Warning: this will take a long time to run and maybe crash your computer! ###
 ms.results = run.ms(S_dot = NULL,
-                    S_stratum = list(formula = ~ -1 + stratum + PB_time),
+                    S_stratum = list(formula = ~ -1 + stratum * PB_time),
                     p_dot = list(formula = ~ 1),
                     p_stratum = NULL,
-                    Psi_s = list(formula =  ~ -1 + stratum:tostratum + PB_time, link = "logit"))
+                    Psi_s = list(formula =  ~ -1 + stratum:tostratum * PB_time, link = "logit"))
 ms.results
 names(ms.results)
 
 ms.summary = ms.results$S.stratum.p.dot.Psi.s
 ms.summary
-#write.csv(ms.summary$results$real, "data/MARKdata/MARKoutput_PP_all_real.csv")
+#write.csv(ms.summary$results$real, "data/MARKdata/MARK_SerenityRun/top_model_summary_[DATE].csv")
+
+rmark_results <- read.csv("data/MARKdata/MARK_SerenityRun/top_model_summary_20180712.csv", stringsAsFactors = FALSE)
+
+# prep RMark results for plotting
+rmark_results$time = c("Absent", "Present", "Absent", "Present", "Absent", "Present", NA, 
+                       "Absent", "Present", "Absent", "Present", "Absent", "Present",
+                       "Absent", "Present", "Absent", "Present", "Absent", "Present")
+
+# add descriptive columns
+rmark_results$metric = rep("S", nrow(rmark_results))
+rmark_results$metric[7] = "p"
+rmark_results$metric[8:19] = "Psi"
+
+rmark_results$stratum = c("A", "A", "B", "B", "C", "C", NA, 
+                          "AB", "AB",  "AC", "AC", "BA", "BA",
+                          "BC", "BC", "CA", "CA", "CB", "CB")
+rmark_results$Treatment = c("Control", "Control", "KR Exclosure", "KR Exclosure", "Removal", "Removal", NA,
+                            "Control to KR Exclosure", "Control to KR Exclosure", "Control to Removal", "Control to Removal",
+                            "KR Exclosure to Control", "KR Exclosure to Control", "KR Exclosure to Removal", "KR Exclosure to Removal",
+                            "Removal to Control", "Removal to Control", "Removal to KR Exclosure", "Removal to KR Exclosure")
+
+plot_rmark <- rmark_results %>% 
+  filter(metric != "p", stratum == "A" | stratum == "B" | stratum == "AB" | stratum == "BA")
+plot_rmark$time <- factor(plot_rmark$time, levels = c("Absent", "Present"))
+
+# plot RMark results
+
+x_axis_title <- expression(paste(bolditalic("C. baileyi"), bold(" Presence")))
+
+(plot1 <- ggplot(plot_rmark[(plot_rmark$metric == "S"),], color = Treatment) +
+    geom_pointrange(aes(x = time, y = estimate, 
+                        ymin = (estimate - se), ymax = (estimate + se), 
+                        color = Treatment), 
+                    position = position_dodge(.1), size = 1, width = .2) +
+    scale_colour_manual(values = cbPalette) + 
+    xlab(x_axis_title) +
+    ylab("Estimated Survival") +
+    theme_classic() +
+    theme(panel.border = element_rect(fill = NA, colour = "black", size = 1),
+          axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
+          axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
+          axis.text.x = element_text(face = "bold", size = 12),
+          axis.text.y = element_text(face = "bold", size = 12)))
+
+#ggsave("figures/Survival.png")
+
+(plot2 <- ggplot(plot_rmark[(plot_rmark$metric == "Psi"),], aes(x = time, y = estimate)) +
+    geom_pointrange(aes(ymin = (estimate - se), ymax = (estimate + se), 
+                        color = Treatment), 
+                    position = position_dodge(.1), size = 1) +
+    scale_colour_manual(values = cbPalette) + 
+    xlab(x_axis_title) +
+    ylab("Transition Probability") +
+    theme_classic() +
+    theme(panel.border = element_rect(fill = NA, colour = "black", size = 1),
+          axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
+          axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
+          axis.text.x = element_text(face = "bold", size = 12),
+          axis.text.y = element_text(face = "bold", size = 12)))
 
 #------------------------------------------------------------
 # Number of New PP Individuals Showing Up on Plots
@@ -384,9 +410,9 @@ new_PP_per_plot <- new_PP_per_plot %>%
   replace_na(list(avg_plot_sum_by_year = 0, se = 0, ymin = 0, ymax = 0))
 
 # rename plot_treatments for plotting
-new_PP_per_plot$plot_type <- plyr::revalue(new_PP_per_plot$plot_type, c("Krat_Exclosure" = "Kangaroo Rat Exclosure"))
+new_PP_per_plot$plot_type <- plyr::revalue(new_PP_per_plot$plot_type, c("Krat_Exclosure" = "KR Exclosure"))
 
-plot6 <- ggplot(new_PP_per_plot, aes(x = year,
+(plot5 <- ggplot(new_PP_per_plot, aes(x = year,
                                      y = avg_plot_sum_by_year,
                                      color = plot_type,
                                      group = plot_type)) +
@@ -409,22 +435,21 @@ plot6 <- ggplot(new_PP_per_plot, aes(x = year,
         axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
         axis.text.x = element_text(face = "bold", size = 12),
         axis.text.y = element_text(face = "bold", size = 12),
-        legend.position = "bottom")
-#ggsave("figures/ms_figures/new_PP_per_year.png", plot6, width = 6, height = 4.5)
+        legend.position = "bottom"))
+#ggsave("figures/ms_figures/new_PP_per_year.png", plot5, width = 6, height = 4.5)
 
 
 #############################################################
 # PP BIOMASS CALCULATIONS
 #############################################################
 
-# BIOMASS
-
 # download biomass data by plot from portalr
 biomass_data <- portalr::get_rodent_data(path = "repo", level = "Plot", output = "biomass")
 
 # select certain treatments and filter by time
 biomass_dat <- biomass_data %>%
-  filter(treatment == "control" | treatment == "exclosure", period >= 118 & period <= 433) # get the right time periods
+  filter(treatment == "control" | treatment == "exclosure", 
+         period >= 118 & period <= 433) # get the right time periods
 
 # add a year column for later summarization
 year_prd_pairs <- unique(tdat[,c("year", "period")]) # get associated years and periods
@@ -454,7 +479,7 @@ biomass_spread <- tidyr::spread(biomass_total, treatment, totals)
 # ratio
 biomass_ratio <- biomass_spread %>% mutate(EX_to_CO_ratio = exclosure/control)
 
-plot5 <- ggplot(biomass_ratio, aes(year, EX_to_CO_ratio, group = 1))+
+(plot6 <- ggplot(biomass_ratio, aes(year, EX_to_CO_ratio, group = 1))+
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
@@ -470,5 +495,5 @@ plot5 <- ggplot(biomass_ratio, aes(year, EX_to_CO_ratio, group = 1))+
         axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
         axis.text.x = element_text(face = "bold", size = 12),
         axis.text.y = element_text(face = "bold", size = 12),
-        plot.margin = margin(10, 15, 10, 10))
-#ggsave("figures/ms_figures/biomass_ratio.png", plot5, width = 5.5, height = 4.5)
+        plot.margin = margin(10, 15, 10, 10)))
+#ggsave("figures/ms_figures/biomass_ratio.png", plot6, width = 5.5, height = 4.5)
