@@ -10,9 +10,9 @@ cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00",
 rmark_results <- read.csv("data/MARKdata/MARK_SerenityRun/top_model_summary_20180712.csv", stringsAsFactors = FALSE)
 
 # DATA PREP #
-rmark_results$time = c("Before", "After", "Before", "After", "Before", "After", NA, 
-                       "Before", "After", "Before", "After", "Before", "After",
-                       "Before", "After", "Before", "After", "Before", "After")
+rmark_results$time = c("Absent", "Present", "Absent", "Present", "Absent", "Present", NA, 
+                       "Absent", "Present", "Absent", "Present", "Absent", "Present",
+                       "Absent", "Present", "Absent", "Present", "Absent", "Present")
 
 rmark_results$metric = rep("S", nrow(rmark_results))
 rmark_results$metric[7] = "p"
@@ -28,16 +28,16 @@ rmark_results$Treatment = c("Control", "Control", "KR Exclosure", "KR Exclosure"
 
 plot_rmark <- rmark_results %>% 
   filter(metric != "p", stratum == "A" | stratum == "B" | stratum == "AB" | stratum == "BA")
-plot_rmark$time <- factor(plot_rmark$time, levels = c("Before", "After"))
+plot_rmark$time <- factor(plot_rmark$time, levels = c("Absent", "Present"))
 
 # PLOTTING #
 
-x_axis_title <- expression(paste(bolditalic("C. baileyi"), bold(" Infiltration Status")))
+x_axis_title <- expression(paste(bolditalic("C. baileyi"), bold(" Presence")))
 
-plot1 <- ggplot(plot_rmark[(plot_rmark$metric == "S"),], color = Treatment) +
+(plot1 <- ggplot(plot_rmark[(plot_rmark$metric == "S"),], color = Treatment) +
   geom_pointrange(aes(x = time, y = estimate, 
                       ymin = (estimate - se), ymax = (estimate + se), 
-                      color = Treatment, shape = Treatment), 
+                      color = Treatment), 
                       position = position_dodge(.1), size = 1, width = .2) +
   scale_colour_manual(values = cbPalette) + 
   xlab(x_axis_title) +
@@ -47,13 +47,13 @@ plot1 <- ggplot(plot_rmark[(plot_rmark$metric == "S"),], color = Treatment) +
         axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
         axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
         axis.text.x = element_text(face = "bold", size = 12),
-        axis.text.y = element_text(face = "bold", size = 12))
+        axis.text.y = element_text(face = "bold", size = 12)))
 
 #ggsave("figures/Survival.png")
 
 (plot2 <- ggplot(plot_rmark[(plot_rmark$metric == "Psi"),], aes(x = time, y = estimate)) +
   geom_pointrange(aes(ymin = (estimate - se), ymax = (estimate + se), 
-                      color = Treatment, shape = Treatment), 
+                      color = Treatment), 
                       position = position_dodge(.1), size = 1) +
   scale_colour_manual(values = cbPalette) + 
   xlab(x_axis_title) +
