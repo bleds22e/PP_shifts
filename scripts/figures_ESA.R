@@ -1,6 +1,7 @@
 # Code for making figures for ESA talk
 # EKB, July 2018
 
+cbbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
 # plot the regression (using original model)
 ggplot(data = PP_and_PB_innerjoin, aes(x = PB_avg_indiv, y = PP_residuals)) +
