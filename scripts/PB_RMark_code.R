@@ -15,6 +15,7 @@ library(forecast)
 library(nlme)
 library(patchwork)
 library(rapportools)
+cbbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
 source("scripts/functions_SRS.r")
 source("scripts/functions_EKB.r")
@@ -122,7 +123,7 @@ y_axis_title <- expression(paste(bold("Avg. "), bolditalic("C. baileyi"), bold("
   geom_line() +
   geom_point(size = 2) +
   geom_errorbar(aes(ymin = ymin, ymax = ymax), width = .5) +
-  scale_color_manual(values = cbPalette) +
+  scale_color_manual(values = cbbPalette) +
   xlab("Year") +
   ylab(y_axis_title) +
   labs(color = "Plot Type") +
@@ -179,9 +180,8 @@ y = PP_PB_join$PP_residuals
 auto.arima(PP_linear_model$PP_residuals)
 
 # build and compare models
-PP_PB_model_linear <- gls(PP_PB_join$PP_residuals ~ PP_PB_join$PB_avg_indiv)
-PP_PB_model_linear_AR1 <- gls(PP_PB_join$PP_residuals ~ PP_PB_join$PB_avg_indiv, 
-                              correlation = corAR1(form = ~1))
+PP_PB_model_linear <- gls(y ~ x)
+PP_PB_model_linear_AR1 <- gls(y ~ x, correlation = corAR1(form = ~1))
 anova(PP_PB_model_linear, PP_PB_model_linear_AR1)
 
 # plot the regression (using original model)
@@ -195,7 +195,7 @@ anova(PP_PB_model_linear, PP_PB_model_linear_AR1)
   ylab("PP Residuals for 1:1 Line") +
   ggtitle("C") +
   theme_classic()+
-  theme(panel.border = element_rect(fill = NA, colour = "black"),
+  theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
         plot.title = element_text(face = "bold", size = 18, hjust = -.1),
         axis.title.x = element_text(face = "bold", size = 14),
         axis.title.y = element_text(face = "bold", size = 14),
@@ -227,7 +227,7 @@ PP_and_PB_fulljoin[is.na(PP_and_PB_fulljoin)] <- 0 # to line up PB abundance for
   ylab("PP Resid. for 1:1 Line") +
   ggtitle("B") +
   theme_classic() +
-  theme(panel.border = element_rect(fill = NA, colour = "black"),
+  theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
         plot.title = element_text(face = "bold", size = 18, hjust = -.125),
         axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
         axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
@@ -248,7 +248,7 @@ PP_and_PB_fulljoin[is.na(PP_and_PB_fulljoin)] <- 0 # to line up PB abundance for
   xlab("Year") +
   ylab("Average PB per Plot") +
   theme_classic() +
-  theme(panel.border = element_rect(fill = NA, colour = "black"),
+  theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
         plot.title = element_text(face = "bold", size = 18, hjust = -.125),
         axis.title.x = element_blank(),
         axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
@@ -257,7 +257,7 @@ PP_and_PB_fulljoin[is.na(PP_and_PB_fulljoin)] <- 0 # to line up PB abundance for
 
 
 plot1 <- (plot1a/plot1b) | plot1c
-ggsave("figures/ms_figures/PB_patchwork_blackline.png", plot1, width = 12.5, height = 6)
+#ggsave("figures/ms_figures/PB_patchwork_blackline.png", plot1, width = 12.5, height = 6)
 
 
 ############################################################
@@ -273,9 +273,9 @@ PP_only <- filter(all_clean, species == 'PP')
 #-----------------------------------------------------------
 
 # Create a set of capture histories by treatment and by plot if needed
-# tags_all = unique(PP_only$tag)
-# periods_all = seq(min(PP_only$period), max(PP_only$period))
-# mark_trmt_all = create_trmt_hist(PP_only, tags_all, periods_all) 
+tags_all = unique(PP_only$tag)
+periods_all = seq(min(PP_only$period), max(PP_only$period))
+mark_trmt_all = create_trmt_hist(PP_only, tags_all, periods_all)
 
 # for future use:
 # write.csv(mark_trmt_pre, "data/PP_capture_history_prePBmax.csv")
@@ -353,40 +353,48 @@ plot_rmark$time <- factor(plot_rmark$time, levels = c("Absent", "Present"))
 
 x_axis_title <- expression(paste(bolditalic("C. baileyi"), bold(" Presence")))
 
-(plot1 <- ggplot(plot_rmark[(plot_rmark$metric == "S"),], color = Treatment) +
+(plot2a <- ggplot(plot_rmark[(plot_rmark$metric == "S"),], color = Treatment) +
     geom_pointrange(aes(x = time, y = estimate, 
                         ymin = (estimate - se), ymax = (estimate + se), 
                         color = Treatment), 
-                    position = position_dodge(.1), size = 1, width = .2) +
-    scale_colour_manual(values = cbPalette) + 
+                        position = position_dodge(.1), size = 1) +
+    scale_colour_manual(values = cbbPalette) + 
     xlab(x_axis_title) +
     ylab("Estimated Survival") +
+    ggtitle("A") +
     theme_classic() +
-    theme(panel.border = element_rect(fill = NA, colour = "black", size = 1),
+    theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
+          plot.title = element_text(face = "bold", size = 18, hjust = -.25),
           axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
           axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
           axis.text.x = element_text(face = "bold", size = 12),
           axis.text.y = element_text(face = "bold", size = 12),
           legend.position = "top",
-          legend.title = element_blank()))
+          legend.title = element_blank(),
+          plot.margin = margin(t = 20)))
+ggsave("figures/ms_figures/Survival.png", width = 4, height = 4)
 
-#ggsave("figures/Survival.png")
-
-(plot2 <- ggplot(plot_rmark[(plot_rmark$metric == "Psi"),], aes(x = time, y = estimate)) +
-    geom_pointrange(aes(ymin = (estimate - se), ymax = (estimate + se), 
+(plot2b <- ggplot(plot_rmark[(plot_rmark$metric == "Psi"),]) +
+    geom_pointrange(aes(x = time, y = estimate,
+                        ymin = (estimate - se), ymax = (estimate + se), 
                         color = Treatment), 
-                    position = position_dodge(.1), size = 1) +
-    scale_colour_manual(values = cbPalette) + 
+                        position = position_dodge(.1), size = 1) +
+    scale_colour_manual(values = cbbPalette) + 
     xlab(x_axis_title) +
     ylab("Transition Probability") +
+    ggtitle("B") +
+    guides(color = guide_legend(nrow = 2)) +
     theme_classic() +
     theme(panel.border = element_rect(fill = NA, colour = "black", size = 1),
+          plot.title = element_text(face = "bold", size = 18, hjust = -.25),
           axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
           axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
           axis.text.x = element_text(face = "bold", size = 12),
           axis.text.y = element_text(face = "bold", size = 12),
           legend.position = "top", 
-          legend.title = element_blank()))
+          legend.title = element_blank(),
+          plot.margin = margin(l = 25)))
+ggsave("figures/ms_figures/TransitionProbability.png", width = 4, height = 4)
 
 #------------------------------------------------------------
 # Number of New PP Individuals Showing Up on Plots
@@ -406,7 +414,7 @@ for (i in 1:length(tags_all)){
 new_PP_per_plot <- first_period %>%
   filter(plot_type != "Removal") %>%
   group_by(plot, year, plot_type) %>%
-  summarise(count = n()) %>%
+  summarise(count = n(species)) %>%
   ungroup()
 new_PP_per_plot <- new_PP_per_plot %>%
   group_by(year, plot_type) %>%
@@ -420,8 +428,9 @@ new_PP_per_plot <- new_PP_per_plot %>%
 
 # rename plot_treatments for plotting
 new_PP_per_plot$plot_type <- plyr::revalue(new_PP_per_plot$plot_type, c("Krat_Exclosure" = "KR Exclosure"))
+y_axis_title <- expression(paste(bold("Avg. "), bolditalic("C. penicillatus"), bold(" Individuals")))
 
-(plot5 <- ggplot(new_PP_per_plot, aes(x = year,
+(plot2c <- ggplot(new_PP_per_plot, aes(x = year,
                                      y = avg_plot_sum_by_year,
                                      color = plot_type,
                                      group = plot_type)) +
@@ -435,18 +444,25 @@ new_PP_per_plot$plot_type <- plyr::revalue(new_PP_per_plot$plot_type, c("Krat_Ex
   geom_point(size = 2.5) +
   geom_line() +
   geom_errorbar(aes(ymin = ymin, ymax = ymax), width = .5) +
-  ylab("Avg. New PP Individuals per Plot") +
+  ylab("Avg. Individuals") +
   xlab("Year") +
-  #scale_y_log10() +
+  ggtitle("C") +
+  #guides(color = guide_legend(override.aes = list(size = 3))) +
   theme_classic() +
   theme(panel.border = element_rect(fill = NA, colour = "black"),
+        plot.title = element_text(face = "bold", size = 18, hjust = -.1),
         axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
         axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
         axis.text.x = element_text(face = "bold", size = 12),
         axis.text.y = element_text(face = "bold", size = 12),
-        legend.position = "bottom"))
-#ggsave("figures/ms_figures/new_PP_per_year.png", plot5, width = 6, height = 4.5)
+        legend.position = "top", 
+        legend.title = element_blank(),
+        plot.margin = margin(r = 10, t = 15)))
+ggsave("figures/ms_figures/new_PP_per_year.png", plot2c, width = 6, height = 4.5)
 
+# make figure for ms
+plot2 <- plot2a + plot2b - plot2c + plot_layout(ncol = 1)
+ggsave("figures/ms_figures/PP_metrics.png", plot2, width = 6.5, height = 7)
 
 #############################################################
 # PP BIOMASS CALCULATIONS
