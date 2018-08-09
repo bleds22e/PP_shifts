@@ -383,7 +383,7 @@ x_axis_title <- expression(paste(bolditalic("C. baileyi"), bold(" Presence")))
           legend.position = "top",
           legend.title = element_blank(),
           plot.margin = margin(t = 20)))
-ggsave("figures/ms_figures/Survival.png", width = 4, height = 4)
+#ggsave("figures/ms_figures/Survival.png", width = 4, height = 4)
 
 (plot2b <- ggplot(plot_rmark[(plot_rmark$metric == "Psi"),]) +
     geom_pointrange(aes(x = time, y = estimate,
@@ -405,7 +405,7 @@ ggsave("figures/ms_figures/Survival.png", width = 4, height = 4)
           legend.position = "top", 
           legend.title = element_blank(),
           plot.margin = margin(l = 25)))
-ggsave("figures/ms_figures/TransitionProbability.png", width = 4, height = 4)
+#ggsave("figures/ms_figures/TransitionProbability.png", width = 4, height = 4)
 
 #------------------------------------------------------------
 # Number of New PP Individuals Showing Up on Plots
@@ -469,11 +469,11 @@ y_axis_title <- expression(paste(bold("Avg. "), bolditalic("C. penicillatus"), b
         legend.position = "top", 
         legend.title = element_blank(),
         plot.margin = margin(r = 10, t = 15)))
-ggsave("figures/ms_figures/new_PP_per_year.png", plot2c, width = 6, height = 4.5)
+#ggsave("figures/ms_figures/new_PP_per_year.png", plot2c, width = 6, height = 4.5)
 
 # make figure for ms
 plot2 <- plot2a + plot2b - plot2c + plot_layout(ncol = 1)
-ggsave("figures/ms_figures/PP_metrics.png", plot2, width = 6, height = 7)
+#ggsave("figures/ms_figures/PP_metrics.png", plot2, width = 6, height = 7)
 
 #############################################################
 # PP BIOMASS CALCULATIONS
