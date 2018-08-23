@@ -5,7 +5,7 @@
 # LIBRARIES and SOURCE CODE
 
 # install portalr if not already done
-#devtools::install_github("weecology/portalr")
+# devtools::install_github("weecology/portalr")
 
 library(portalr)
 library(RCurl)
@@ -78,9 +78,9 @@ PB_max <- min(PB_plot_count$period[PB_plot_count$count == 8])
 # 2010 (prd 388) = first time not caught during a survey since PB_max
 
 
-############################################################
-# PPs IN THE CONTEXT OF PBs
-############################################################
+##################################################################################
+# Patch Preference of C. penicillatus in Response to C. baileyi Abundance
+##################################################################################
 
 no_removals <- all_no_incomplete %>% filter(Treatment_Number != 3)
 
@@ -271,7 +271,7 @@ plot1 <- (plot1a/plot1b) | plot1c
 
 
 ############################################################
-# PP POPULATION-LEVEL RATES and RMARK
+# C. penicillatus Population-level Metrics and RMARK
 ############################################################
 
 # select only PPs from the data and use Sarah's code to clean
@@ -476,7 +476,7 @@ plot2 <- plot2a + plot2b - plot2c + plot_layout(ncol = 1)
 #ggsave("figures/ms_figures/PP_metrics.png", plot2, width = 6, height = 7)
 
 #############################################################
-# PP BIOMASS CALCULATIONS
+# Ecosystem Functioning Aspects of Patch Preference
 #############################################################
 
 # download biomass data by plot from portalr
