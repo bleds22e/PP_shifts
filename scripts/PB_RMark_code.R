@@ -339,9 +339,9 @@ ms.summary
 rmark_results <- read.csv("data/MARKdata/MARK_SerenityRun/top_model_summary_20180712.csv", stringsAsFactors = FALSE)
 
 # prep RMark results for plotting
-rmark_results$time = c("Absent", "Present", "Absent", "Present", "Absent", "Present", NA, 
-                       "Absent", "Present", "Absent", "Present", "Absent", "Present",
-                       "Absent", "Present", "Absent", "Present", "Absent", "Present")
+rmark_results$time = c("Before", "After", "Before", "After", "Before", "After", NA, 
+                       "Before", "After", "Before", "After", "Before", "After",
+                       "Before", "After", "Before", "After", "Before", "After")
 
 # add descriptive columns
 rmark_results$metric = rep("S", nrow(rmark_results))
@@ -358,11 +358,11 @@ rmark_results$Treatment = c("Control", "Control", "KR Exclosure", "KR Exclosure"
 
 plot_rmark <- rmark_results %>% 
   filter(metric != "p", stratum == "A" | stratum == "B" | stratum == "AB" | stratum == "BA")
-plot_rmark$time <- factor(plot_rmark$time, levels = c("Absent", "Present"))
+plot_rmark$time <- factor(plot_rmark$time, levels = c("Before", "After"))
 
 # plot RMark results
 
-x_axis_title <- expression(paste(bolditalic("C. baileyi"), bold(" Presence")))
+x_axis_title <- expression(paste(bolditalic("C. baileyi"), bold(" Infiltration")))
 
 (plot2a <- ggplot(plot_rmark[(plot_rmark$metric == "S"),], color = Treatment) +
     geom_pointrange(aes(x = time, y = estimate, 
@@ -473,7 +473,7 @@ y_axis_title <- expression(paste(bold("Avg. "), bolditalic("C. penicillatus"), b
 
 # make figure for ms
 plot2 <- plot2a + plot2b - plot2c + plot_layout(ncol = 1)
-#ggsave("figures/ms_figures/PP_metrics.png", plot2, width = 6, height = 7)
+ggsave("figures/ms_figures/PP_metrics_infiltraton.png", plot2, width = 6, height = 7)
 
 #############################################################
 # Ecosystem Functioning Aspects of Patch Preference
