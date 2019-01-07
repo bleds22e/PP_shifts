@@ -7,13 +7,14 @@
 # install portalr if not already done
 # devtools::install_github("weecology/portalr")
 
+library(tidyverse)
 library(portalr)
 library(RCurl)
+library(plotrix)
 library(RMark)
-library(tidyverse)
 library(forecast)
 library(nlme)
-library(patchwork)
+library(patchwork) # devtools::install_github("thomasp85/patchwork")
 library(rapportools)
 cbbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
@@ -293,8 +294,8 @@ mark_trmt_all = create_trmt_hist(PP_only, tags_all, periods_all)
 # write.csv(mark_trmt_all, "data/PP_capture_history_all_20180711.csv")
 
 # load in capture histories if already created
-all <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/PP_capture_history_all_20180711.csv")
-mark_trmt_all <- read.csv(text = all, header = TRUE, stringsAsFactors = FALSE)
+all_hist <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/MARKdata/PP_capture_history_all_20180711.csv")
+mark_trmt_all <- read.csv(text = all_hist, header = TRUE, stringsAsFactors = FALSE)
 
 # prep data for RMark
 all_ms <- select(mark_trmt_all, captures) %>% dplyr::rename("ch" = "captures")
