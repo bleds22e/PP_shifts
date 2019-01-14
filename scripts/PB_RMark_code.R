@@ -187,8 +187,8 @@ anova(PP_PB_model_linear, PP_PB_model_linear_AR1)
 
 # plot the regression (using original model)
 
-x_axis_title <- expression(paste(bold("Avg. "), bolditalic("C. baileyi"), bold(" per Plot")))
-y_axis_title <- expression(paste(bolditalic("C. penicillatus"), bold(" Difference from Equal")))
+x_axis_title <- expression(paste(bold("Avg. "), bolditalic("C. baileyi"), bold(" per plot")))
+y_axis_title <- expression(paste(bolditalic("C. penicillatus"), bold(" difference from equal")))
 
 (plot1c <-
   ggplot(data = PP_PB_join, aes(x = PB_avg_indiv, y = PP_residuals)) +
@@ -219,7 +219,7 @@ PP_and_PB_fulljoin[is.na(PP_and_PB_fulljoin)] <- 0 # to line up PB abundance for
 
 # PP residuals through time
 
-y_axis_title <- expression(paste(bolditalic("C. pen."), bold(" Diff. from Equal")))
+y_axis_title <- expression(paste(bolditalic("C. pen."), bold(" diff. from equal")))
 
 (plot1b <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PP_residuals)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,

@@ -100,9 +100,8 @@ ggsave("figures/ms_figures/fig1_test.png", plot1, width = 7, height = 3.5, dpi =
 # Figure 2
 
 x_axis_title <- expression(paste(italic("C. baileyi"), " establishment"))
-y_axis_title <- expression(paste("Estimated Survival, ", italic("S")))
 
-ggplot(plot_rmark[(plot_rmark$metric == "S"),], color = Treatment) +
+plot2a <- ggplot(plot_rmark[(plot_rmark$metric == "S"),], color = Treatment) +
     geom_pointrange(aes(x = time, y = estimate, 
                         ymin = (estimate - se), ymax = (estimate + se), 
                         color = Treatment), 
@@ -121,7 +120,7 @@ ggplot(plot_rmark[(plot_rmark$metric == "S"),], color = Treatment) +
           legend.title = element_blank(),
           plot.margin = margin(l = 5, t = 20))
 
-ggplot(plot_rmark[(plot_rmark$metric == "Psi"),]) +
+plot2b <- ggplot(plot_rmark[(plot_rmark$metric == "Psi"),]) +
     geom_pointrange(aes(x = time, y = estimate,
                         ymin = (estimate - se), ymax = (estimate + se), 
                         color = Treatment), 
