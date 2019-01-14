@@ -187,26 +187,27 @@ anova(PP_PB_model_linear, PP_PB_model_linear_AR1)
 
 # plot the regression (using original model)
 
-x_axis_title <- expression(paste(bold("Avg. "), bolditalic("C. baileyi"), bold(" per plot")))
-y_axis_title <- expression(paste(bolditalic("C. penicillatus"), bold(" difference from equal")))
+x_axis_title <- expression(paste("Mean ", italic("C. baileyi"), " per plot"))
+y_axis_title <- expression(paste(italic("C. penicillatus"), " difference from equal"))
 
-(plot1c <-
-  ggplot(data = PP_PB_join, aes(x = PB_avg_indiv, y = PP_residuals)) +
-  geom_hline(aes(yintercept = 0), color = 'black', linetype = 2)+
+# plot 1c
+plot1c <- ggplot(data = PP_PB_join, aes(x = PB_avg_indiv, y = PP_residuals)) +
+  geom_hline(aes(yintercept = 0), color = 'dark gray') +
   geom_smooth(aes(y = fitted(PP_PB_model_linear_AR1)),  size = 1, color = "black") +
-  #stat_smooth(method = 'lm', size = 2, color = "black") + #### WHY IS THIS NOT WORKING? ####
-  geom_point(size = 3) +
+  geom_point(size = 2) +
   xlab(x_axis_title) +
   ylab(y_axis_title) +
-  ggtitle("C") +
+  labs(subtitle = 'c') +
   theme_classic()+
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
-        plot.title = element_text(face = "bold", size = 18, hjust = -.1),
-        axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
-        axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 5)),
-        axis.text.x = element_text(face = "bold", size = 12),
-        axis.text.y = element_text(face = "bold", size = 12),
-        plot.margin = margin(l = 25)))
+        plot.subtitle = element_text(size = 10, hjust = -.075),
+        axis.line = element_line(size = .25),
+        axis.title.x = element_text(size = 10, margin = margin(t = 10)),
+        axis.title.y = element_text(size = 10, margin = margin(r = 5)),
+        axis.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 8),
+        plot.margin = margin(l = 25))
+
 #ggsave("figures/ms_figures/PP_residuals_PB_abund_geomsmooth.png", plot1c, width = 5, height = 4.5)
 
 #-----------------------------------------------------------
@@ -219,9 +220,9 @@ PP_and_PB_fulljoin[is.na(PP_and_PB_fulljoin)] <- 0 # to line up PB abundance for
 
 # PP residuals through time
 
-y_axis_title <- expression(paste(bolditalic("C. pen."), bold(" diff. from equal")))
+y_axis_title <- expression(paste(italic("C. pen."), " diff. from equal"))
 
-(plot1b <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PP_residuals)) +
+plot1b <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PP_residuals)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
@@ -229,46 +230,52 @@ y_axis_title <- expression(paste(bolditalic("C. pen."), bold(" diff. from equal"
            xmin = 2008, xmax = 2010,
            ymin = -Inf, ymax = Inf) +
   geom_hline(aes(yintercept = 0), color = 'black') +
-  geom_point(size = 3) +
+  geom_point(size = 2) +
   geom_line()+
   xlab("Year") +
   ylab(y_axis_title) +
-  ggtitle("B") +
+  labs(subtitle = 'b') +
   theme_classic() +
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
-        plot.title = element_text(face = "bold", size = 18, hjust = -.115),
-        axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
-        axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 5)),
-        axis.text.x = element_text(face = "bold", size = 12),
-        axis.text.y = element_text(face = "bold", size = 12)))
+        plot.subtitle = element_text(size = 10, hjust = -.05),
+        axis.line = element_line(size = .25),
+        axis.title.x = element_text(size = 10, margin = margin(t = 10)),
+        axis.title.y = element_text(size = 8, margin = margin(r = 5)),
+        axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 7),
+        plot.margin = margin(r = 15, l = 5))
 
 # Average PB individuals through time
 
-y_axis_title <- expression(paste(bold("Avg. "), bolditalic("C. baileyi"), bold(" per Plot")))
+y_axis_title <- expression(paste("Mean ", italic("C. baileyi"), " per plot"))
 
-(plot1a <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PB_avg_indiv)) +
+plot1a <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PB_avg_indiv)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 2008, xmax = 2010,
            ymin = -Inf, ymax = Inf) +
-  geom_point(size = 3) +
+  geom_point(size = 2) +
   geom_line() +
-  ggtitle("A") +
   xlab("Year") +
   ylab(y_axis_title) +
+  labs(subtitle = 'a') +
   theme_classic() +
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
-        plot.title = element_text(face = "bold", size = 18, hjust = -.115),
+        plot.subtitle = element_text(size = 10, hjust = -.05),
+        axis.line = element_line(size = .25),
         axis.title.x = element_blank(),
-        axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 5)),
-        axis.text.x = element_text(face = "bold", size = 12),
-        axis.text.y = element_text(face = "bold", size = 12)))
+        axis.title.y = element_text(size = 8, margin = margin(r = 5)),
+        axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 7),
+        plot.margin = margin(r = 15, l = 5))
 
 
 plot1 <- (plot1a/plot1b) | plot1c
-#ggsave("figures/ms_figures/PB_patchwork_blackline.png", plot1, width = 12.5, height = 6.5)
+plot1
+
+#ggsave("figures/ms_figures/Figure1.png", plot1, width = 7, height = 3.5, dpi = 600)
 
 
 ############################################################
