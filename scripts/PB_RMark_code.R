@@ -532,16 +532,16 @@ plot3 <- ggplot(biomass_ratio, aes(year, EX_to_CO_ratio, group = 1)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 2008, xmax = 2010, # 2008 is the last time PBs were on 8 krat exclosure plots (366); 2010 first time not caught in a census
            ymin = -Inf, ymax = Inf) +
-  geom_point(size = 3) +
+  geom_point(size = 2) +
   geom_line() +
   ylab("KR exlcosure:control biomass") +
   xlab("Year") + 
   theme_classic() +
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
-        axis.title.x = element_text(size = 12, margin = margin(t = 10)),
-        axis.title.y = element_text(size = 12, margin = margin(r = 10)),
-        axis.text.x = element_text(size = 10),
-        axis.text.y = element_text(size = 10),
+        axis.title.x = element_text(size = 10, margin = margin(t = 10)),
+        axis.title.y = element_text(size = 10, margin = margin(r = 10)),
+        axis.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 8),
         plot.margin = margin(10, 15, 10, 10))
 
-#ggsave("figures/ms_figures/biomass_ratio.png", plot3, width = 4, height = 4, dpi = 600)
+ggsave("figures/ms_figures/biomass_ratio.png", plot3, width = 3.5, height = 3, dpi = 600)
