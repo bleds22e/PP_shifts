@@ -370,49 +370,51 @@ plot_rmark$time <- factor(plot_rmark$time, levels = c("Before", "After"))
 
 # plot RMark results
 
-x_axis_title <- expression(paste(bolditalic("C. baileyi"), bold(" Infiltration")))
+x_axis_title <- expression(paste(bolditalic("C. baileyi"), bold(" establishment")))
 
-(plot2a <- ggplot(plot_rmark[(plot_rmark$metric == "S"),], color = Treatment) +
-    geom_pointrange(aes(x = time, y = estimate, 
-                        ymin = (estimate - se), ymax = (estimate + se), 
-                        color = Treatment), 
-                        position = position_dodge(.1), size = .75) +
-    scale_colour_manual(values = cbbPalette) + 
-    xlab(x_axis_title) +
-    ylab("Estimated Survival") +
-    ggtitle("A") +
-    theme_classic() +
-    theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
-          plot.title = element_text(face = "bold", size = 18, hjust = -.355),
-          axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
-          axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
-          axis.text.x = element_text(face = "bold", size = 12),
-          axis.text.y = element_text(face = "bold", size = 12),
-          legend.position = "top",
-          legend.title = element_blank(),
-          plot.margin = margin(t = 20)))
+plot2a <- ggplot(plot_rmark[(plot_rmark$metric == "S"),], color = Treatment) +
+  geom_pointrange(aes(x = time, y = estimate, 
+                      ymin = (estimate - se), ymax = (estimate + se), 
+                      color = Treatment), 
+                  position = position_dodge(.1), size = .75) +
+  scale_colour_manual(values = cbbPalette) + 
+  xlab(x_axis_title) +
+  ylab("Estimated survival") + # how to you insert greek letters into titles?
+  labs(subtitle = 'a') +
+  theme_classic() +
+  theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
+        plot.subtitle = element_text(size = 14, hjust = -.2),
+        axis.line = element_line(size = .25),
+        axis.title.x = element_text(size = 12, margin = margin(t = 10)),
+        axis.title.y = element_text(size = 12, margin = margin(r = 10)),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        legend.position = "top",
+        legend.title = element_blank(),
+        plot.margin = margin(l = 5, t = 20))
 #ggsave("figures/ms_figures/Survival.png", width = 4, height = 4)
 
-(plot2b <- ggplot(plot_rmark[(plot_rmark$metric == "Psi"),]) +
-    geom_pointrange(aes(x = time, y = estimate,
-                        ymin = (estimate - se), ymax = (estimate + se), 
-                        color = Treatment), 
-                        position = position_dodge(.1), size = .75) +
-    scale_colour_manual(values = cbbPalette) + 
-    xlab(x_axis_title) +
-    ylab("Transition Probability") +
-    ggtitle("B") +
-    guides(color = guide_legend(nrow = 2)) +
-    theme_classic() +
-    theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
-          plot.title = element_text(face = "bold", size = 18, hjust = -.35),
-          axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
-          axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
-          axis.text.x = element_text(face = "bold", size = 12),
-          axis.text.y = element_text(face = "bold", size = 12),
-          legend.position = "top", 
-          legend.title = element_blank(),
-          plot.margin = margin(l = 25)))
+plot2b <- ggplot(plot_rmark[(plot_rmark$metric == "Psi"),]) +
+  geom_pointrange(aes(x = time, y = estimate,
+                      ymin = (estimate - se), ymax = (estimate + se), 
+                      color = Treatment), 
+                  position = position_dodge(.1), size = .75) +
+  scale_colour_manual(values = cbbPalette) + 
+  xlab(x_axis_title) +
+  ylab("Transition probability") +
+  guides(color = guide_legend(nrow = 2)) +
+  labs(subtitle = 'b') +
+  theme_classic() +
+  theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
+        plot.subtitle = element_text(size = 14, hjust = -.2),
+        axis.line = element_line(size = .25),
+        axis.title.x = element_text(size = 12, margin = margin(t = 10)),
+        axis.title.y = element_text(size = 12, margin = margin(r = 10)),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        legend.position = "top", 
+        legend.title = element_blank(),
+        plot.margin = margin(l = 20))
 #ggsave("figures/ms_figures/TransitionProbability.png", width = 4, height = 4)
 
 #------------------------------------------------------------
@@ -447,12 +449,12 @@ new_PP_per_plot <- new_PP_per_plot %>%
 
 # rename plot_treatments for plotting
 new_PP_per_plot$plot_type <- plyr::revalue(new_PP_per_plot$plot_type, c("Krat_Exclosure" = "KR Exclosure"))
-y_axis_title <- expression(paste(bold("Avg. "), bolditalic("C. penicillatus"), bold(" Individuals")))
+y_axis_title <- expression(paste("Avg. ", italic("C. penicillatus"), " individuals"))
 
-(plot2c <- ggplot(new_PP_per_plot, aes(x = year,
-                                     y = avg_plot_sum_by_year,
-                                     color = plot_type,
-                                     group = plot_type)) +
+plot2c <- ggplot(new_PP_per_plot, aes(x = year,
+                                      y = avg_plot_sum_by_year,
+                                      color = plot_type,
+                                      group = plot_type)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
@@ -463,25 +465,25 @@ y_axis_title <- expression(paste(bold("Avg. "), bolditalic("C. penicillatus"), b
   geom_point(size = 2.5) +
   geom_line() +
   geom_errorbar(aes(ymin = ymin, ymax = ymax), width = .5) +
-  ylab("Avg. Individuals") +
+  ylab(y_axis_title) +
   xlab("Year") +
-  ggtitle("C") +
+  labs(subtitle = 'c') +
   #guides(color = guide_legend(override.aes = list(size = 3))) +
   theme_classic() +
-  theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.75),
-        plot.title = element_text(face = "bold", size = 18, hjust = -.137, vjust = -5),
-        axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
-        axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
-        axis.text.x = element_text(face = "bold", size = 12),
-        axis.text.y = element_text(face = "bold", size = 12),
+  theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
+        plot.subtitle = element_text(size = 14, hjust = -.08), 
+        axis.title.x = element_text(size = 12, margin = margin(t = 10)),
+        axis.title.y = element_text(size = 12, margin = margin(r = 10)),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
         legend.position = "top", 
         legend.title = element_blank(),
-        plot.margin = margin(r = 10, t = 15)))
+        plot.margin = margin(r = 10, t = 15))
 #ggsave("figures/ms_figures/new_PP_per_year.png", plot2c, width = 6, height = 4.5)
 
 # make figure for ms
 plot2 <- plot2a + plot2b - plot2c + plot_layout(ncol = 1)
-ggsave("figures/ms_figures/PP_metrics_infiltraton.png", plot2, width = 6, height = 7)
+#ggsave("figures/ms_figures/PP_metrics_infiltraton.png", plot2, width = 6, height = 7, dpi = 600)
 
 #############################################################
 # Ecosystem Functioning Aspects of Patch Preference
@@ -523,7 +525,7 @@ biomass_spread <- tidyr::spread(biomass_total, treatment, totals)
 # ratio
 biomass_ratio <- biomass_spread %>% mutate(EX_to_CO_ratio = exclosure/control)
 
-(plot6 <- ggplot(biomass_ratio, aes(year, EX_to_CO_ratio, group = 1))+
+plot3 <- ggplot(biomass_ratio, aes(year, EX_to_CO_ratio, group = 1)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
            ymin = -Inf, ymax = Inf) +
@@ -531,13 +533,15 @@ biomass_ratio <- biomass_spread %>% mutate(EX_to_CO_ratio = exclosure/control)
            xmin = 2008, xmax = 2010, # 2008 is the last time PBs were on 8 krat exclosure plots (366); 2010 first time not caught in a census
            ymin = -Inf, ymax = Inf) +
   geom_point(size = 3) +
-  geom_line()+
-  ylab("Kangaroo Rat Exlcosure:Control Biomass") +
+  geom_line() +
+  ylab("KR exlcosure:control biomass") +
+  xlab("Year") + 
   theme_classic() +
-  theme(panel.border = element_rect(fill = NA, colour = "black"),
-        axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
-        axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
-        axis.text.x = element_text(face = "bold", size = 12),
-        axis.text.y = element_text(face = "bold", size = 12),
-        plot.margin = margin(10, 15, 10, 10)))
-#ggsave("figures/ms_figures/biomass_ratio.png", plot6, width = 5.5, height = 4.5)
+  theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
+        axis.title.x = element_text(size = 12, margin = margin(t = 10)),
+        axis.title.y = element_text(size = 12, margin = margin(r = 10)),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        plot.margin = margin(10, 15, 10, 10))
+
+#ggsave("figures/ms_figures/biomass_ratio.png", plot3, width = 4, height = 4, dpi = 600)
