@@ -118,26 +118,27 @@ avg_by_year_plotting$plot_type <- plyr::revalue(avg_by_year$plot_type, c("Krat_E
 # Plot PB by treatment
 
 PB_only <- filter(avg_by_year_plotting, species == "PB")
-y_axis_title <- expression(paste(bold("Avg. "), bolditalic("C. baileyi"), bold(" Individuals")))
+y_axis_title <- expression(paste("Avg. ", italic("C. baileyi"), " individuals"))
 
 (plot_supp1 <- ggplot(PB_only, aes(x = year, y = avg_ind_per_prd, color = plot_type, group = plot_type)) +
-  geom_line() +
+  geom_line(size = 1) +
   geom_point(size = 2) +
   geom_errorbar(aes(ymin = ymin, ymax = ymax), width = .5) +
   scale_color_manual(values = cbbPalette) +
   xlab("Year") +
   ylab(y_axis_title) +
-  labs(color = "Plot Type") +
+  labs(color = "Plot type") +
   theme_classic() +
-  theme(panel.border = element_rect(fill = NA, colour = "black"),
-        axis.title.x = element_text(face = "bold", size = 14, margin = margin(t = 10)),
-        axis.title.y = element_text(face = "bold", size = 14, margin = margin(r = 10)),
-        axis.text.x = element_text(face = "bold", size = 12),
-        axis.text.y = element_text(face = "bold", size = 12),
-        legend.position = "top", 
+  theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
+        axis.title.x = element_text(size = 12, margin = margin(t = 10)),
+        axis.title.y = element_text(size = 12, margin = margin(r = 10)),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
         legend.title = element_blank(),
         plot.margin = margin(r = 15, l = 10)))
-#ggsave("figures/ms_figures/PB_by_plottype_toplegend.png")
+# ggsave("figures/ms_figures/supp1.png", plot_supp1, height = 3, width = 6, dpi = 600)
+# ggsave("figures/ms_figures/supp1_tiff.tiff", plot_supp1, height = 3, width = 6, dpi = 600)
+# ggsave("figures/ms_figures/supp1_jpeg.jpg", plot_supp1, height = 3, width = 6, dpi = 600)
 
 #-----------------------------------------------------------
 # Find Deviation from Equal PP Populations (1:1 line)
@@ -276,7 +277,7 @@ plot1 <- (plot1a/plot1b) | plot1c
 plot1
 
 #ggsave("figures/ms_figures/Figure1.png", plot1, width = 7, height = 3.5, dpi = 600)
-
+#ggsave("figures/ms_figures/Figure1_jpg.jpg", plot1, width = 7, height = 3.5, dpi = 600)
 
 ############################################################
 # C. penicillatus Population-level Metrics and RMARK
@@ -290,19 +291,26 @@ PP_only <- filter(all_clean, species == 'PP')
 # Run MARK analyses on all PPs
 #-----------------------------------------------------------
 
+#################################################################################
+### Warning: this will take a long time to run and maybe crash your computer! ###
+#################################################################################
+#                                                                               #
+#       The `create_trmt_hist` function to create mark_trmt_all will            #
+#       take a long time to run. You can either read in the results             #
+#       from the GitHub repo (line 312-3) and then run the RMark code           #
+#       - OR - you can skip to line 364 to read in the RMark results            #
+#                                                                               #
+#################################################################################
+
+
 # Create a set of capture histories by treatment and by plot if needed
 tags_all = unique(PP_only$tag)
 periods_all = seq(min(PP_only$period), max(PP_only$period))
 mark_trmt_all = create_trmt_hist(PP_only, tags_all, periods_all)
 
-# for future use:
-# write.csv(mark_trmt_pre, "data/PP_capture_history_prePBmax.csv")
-# write.csv(mark_trmt_post, "data/PP_capture_history_postPBmax.csv")
-# write.csv(mark_trmt_all, "data/PP_capture_history_all_20180711.csv")
-
 # load in capture histories if already created
-all_hist <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/MARKdata/PP_capture_history_all_20180711.csv")
-mark_trmt_all <- read.csv(text = all_hist, header = TRUE, stringsAsFactors = FALSE)
+# all_hist <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/MARKdata/PP_capture_history_all_20180711.csv")
+# mark_trmt_all <- read.csv(text = all_hist, header = TRUE, stringsAsFactors = FALSE)
 
 # prep data for RMark
 all_ms <- select(mark_trmt_all, captures) %>% dplyr::rename("ch" = "captures")
@@ -328,9 +336,17 @@ ms.ddl$Psi$PB_time[ms.ddl$Psi$time %in% PB_time_after] = 1
 
 # Run the models and examine the output
 
-MarkViewer="open -a TextEdit" # edit to make results pop up on a Mac
+#################################################################################
+### Warning: this will take a long time to run and maybe crash your computer! ###
+#################################################################################
+#                                                                               #
+#       If you don't want to run this yourself, you can read in the             #
+#       RMark results from the GitHub repo instead (see line 364)               #
+#                                                                               #
+#################################################################################
 
-  ### Warning: this will take a long time to run and maybe crash your computer! ###
+# MarkViewer="open -a TextEdit" # edit to make results pop up on a Mac
+
 ms.results = run.ms(S_dot = NULL,
                     S_stratum = list(formula = ~ -1 + stratum * PB_time),
                     p_dot = list(formula = ~ 1),
@@ -341,10 +357,11 @@ names(ms.results)
 
 ms.summary = ms.results$S.stratum.p.dot.Psi.s
 ms.summary
+rmark_results <- ms.summary
 #write.csv(ms.summary$results$real, "data/MARKdata/MARK_SerenityRun/top_model_summary_[DATE].csv")
 
 # read in Mark results if skipping that section
-rmark_results <- read.csv("data/MARKdata/MARK_SerenityRun/top_model_summary_20180712.csv", stringsAsFactors = FALSE)
+# rmark_results <- read.csv("data/MARKdata/MARK_SerenityRun/top_model_summary_20180712.csv", stringsAsFactors = FALSE)
 
 # prep RMark results for plotting
 rmark_results$time = c("Before", "After", "Before", "After", "Before", "After", NA, 
