@@ -118,7 +118,8 @@ avg_by_year_plotting$plot_type <- plyr::revalue(avg_by_year$plot_type, c("Krat_E
 # Plot PB by treatment
 
 PB_only <- filter(avg_by_year_plotting, species == "PB")
-y_axis_title <- expression(paste("Avg. ", italic("C. baileyi"), " individuals"))
+y_axis_title <- expression(atop(paste(italic("C. baileyi"), " individuals"),
+                                "(average per plot)"))
 
 (plot_supp1 <- ggplot(PB_only, aes(x = year, y = avg_ind_per_prd, color = plot_type, group = plot_type)) +
   geom_line(size = 1) +
@@ -137,8 +138,8 @@ y_axis_title <- expression(paste("Avg. ", italic("C. baileyi"), " individuals"))
         legend.title = element_blank(),
         plot.margin = margin(r = 15, l = 10)))
 # ggsave("figures/ms_figures/supp1.png", plot_supp1, height = 3, width = 6, dpi = 600)
-# ggsave("figures/ms_figures/supp1_tiff.tiff", plot_supp1, height = 3, width = 6, dpi = 600)
-# ggsave("figures/ms_figures/supp1_jpeg.jpg", plot_supp1, height = 3, width = 6, dpi = 600)
+# ggsave("figures/ms_figures/supp1_tiff.tiff",
+#        plot_supp1, height = 3, width = 6, dpi = 600, compression = "lzw")
 
 #-----------------------------------------------------------
 # Find Deviation from Equal PP Populations (1:1 line)
@@ -188,8 +189,8 @@ anova(PP_PB_model_linear, PP_PB_model_linear_AR1)
 
 # plot the regression (using original model)
 
-x_axis_title <- expression(paste("Mean ", italic("C. baileyi"), " per plot"))
-y_axis_title <- expression(paste(italic("C. penicillatus"), " difference from equal"))
+x_axis_title <- expression(paste(italic("C. baileyi"), " individuals (average per plot)"))
+y_axis_title <- expression(paste(italic("C. penicillatus"), " residual abundance"))
 
 # plot 1c
 plot1c <- ggplot(data = PP_PB_join, aes(x = PB_avg_indiv, y = PP_residuals)) +
@@ -203,13 +204,13 @@ plot1c <- ggplot(data = PP_PB_join, aes(x = PB_avg_indiv, y = PP_residuals)) +
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
         plot.subtitle = element_text(size = 10, hjust = -.075),
         axis.line = element_line(size = .25),
-        axis.title.x = element_text(size = 10, margin = margin(t = 10)),
-        axis.title.y = element_text(size = 10, margin = margin(r = 5)),
+        axis.title.x = element_text(size = 9, margin = margin(t = 10)),
+        axis.title.y = element_text(size = 9, margin = margin(r = 5)),
         axis.text.x = element_text(size = 8),
         axis.text.y = element_text(size = 8),
         plot.margin = margin(l = 25))
 
-#ggsave("figures/ms_figures/PP_residuals_PB_abund_geomsmooth.png", plot1c, width = 5, height = 4.5)
+# ggsave("figures/ms_figures/PP_residuals_PB_abund_geomsmooth.png", plot1c, width = 5, height = 4.5)
 
 #-----------------------------------------------------------
 # Plot PP Residuals and PP Abundance Through Time
@@ -221,7 +222,8 @@ PP_and_PB_fulljoin[is.na(PP_and_PB_fulljoin)] <- 0 # to line up PB abundance for
 
 # PP residuals through time
 
-y_axis_title <- expression(paste(italic("C. pen."), " diff. from equal"))
+y_axis_title <- expression(atop("Residual abundance"),
+                                phantom('W'))
 
 plot1b <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PP_residuals)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
@@ -235,20 +237,21 @@ plot1b <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PP_residuals)) +
   geom_line()+
   xlab("Year") +
   ylab(y_axis_title) +
-  labs(subtitle = 'b') +
+  labs(subtitle = expression(paste("b", italic("    C. penicillatus")))) +
   theme_classic() +
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
-        plot.subtitle = element_text(size = 10, hjust = -.05),
+        plot.subtitle = element_text(size = 10, hjust = -.1),
         axis.line = element_line(size = .25),
-        axis.title.x = element_text(size = 10, margin = margin(t = 10)),
-        axis.title.y = element_text(size = 8, margin = margin(r = 5)),
-        axis.text.x = element_text(size = 7),
-        axis.text.y = element_text(size = 7),
+        axis.title.x = element_text(size = 9, margin = margin(t = 10)),
+        axis.title.y = element_text(size = 9, margin = margin(r = 5)),
+        axis.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 8),
         plot.margin = margin(r = 15, l = 5))
 
 # Average PB individuals through time
 
-y_axis_title <- expression(paste("Mean ", italic("C. baileyi"), " per plot"))
+y_axis_title <- expression(atop(paste(italic("C. baileyi"), " individuals"),
+                                "(average per plot)"))
 
 plot1a <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PB_avg_indiv)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
@@ -261,23 +264,24 @@ plot1a <- ggplot(PP_and_PB_fulljoin, aes(x = year, y = PB_avg_indiv)) +
   geom_line() +
   xlab("Year") +
   ylab(y_axis_title) +
-  labs(subtitle = 'a') +
+  labs(subtitle = expression(paste("a", italic("    C. baileyi")))) +
   theme_classic() +
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
-        plot.subtitle = element_text(size = 10, hjust = -.05),
+        plot.subtitle = element_text(size = 10, hjust = -.1),
         axis.line = element_line(size = .25),
         axis.title.x = element_blank(),
-        axis.title.y = element_text(size = 8, margin = margin(r = 5)),
-        axis.text.x = element_text(size = 7),
-        axis.text.y = element_text(size = 7),
-        plot.margin = margin(r = 15, l = 5))
+        axis.title.y = element_text(size = 9, margin = margin(r = 5)),
+        axis.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 8),
+        plot.margin = margin(r = 15, l = 5, b = 15))
 
 
 plot1 <- (plot1a/plot1b) | plot1c
 plot1
 
-#ggsave("figures/ms_figures/Figure1.png", plot1, width = 7, height = 3.5, dpi = 600)
-#ggsave("figures/ms_figures/Figure1_jpg.jpg", plot1, width = 7, height = 3.5, dpi = 600)
+# ggsave("figures/ms_figures/Figure1.png", plot1, width = 7, height = 3.5, dpi = 600)
+# ggsave("figures/ms_figures/Figure1_tiff.tiff",
+#       plot1, width = 7, height = 3.5, dpi = 600, compression = 'lzw')
 
 ############################################################
 # C. penicillatus Population-level Metrics and RMARK
@@ -291,26 +295,26 @@ PP_only <- filter(all_clean, species == 'PP')
 # Run MARK analyses on all PPs
 #-----------------------------------------------------------
 
+# Create a set of capture histories by treatment and by plot if needed
+tags_all = unique(PP_only$tag)
+periods_all = seq(min(PP_only$period), max(PP_only$period))
+
 #################################################################################
 ### Warning: this will take a long time to run and maybe crash your computer! ###
 #################################################################################
 #                                                                               #
 #       The `create_trmt_hist` function to create mark_trmt_all will            #
 #       take a long time to run. You can either read in the results             #
-#       from the GitHub repo (line 312-3) and then run the RMark code           #
-#       - OR - you can skip to line 364 to read in the RMark results            #
+#       from the GitHub repo (line 314-5) and then run the RMark code           #
+#       - OR - you can skip to line 366 to read in the RMark results            #
 #                                                                               #
 #################################################################################
 
-
-# Create a set of capture histories by treatment and by plot if needed
-tags_all = unique(PP_only$tag)
-periods_all = seq(min(PP_only$period), max(PP_only$period))
 mark_trmt_all = create_trmt_hist(PP_only, tags_all, periods_all)
 
 # load in capture histories if already created
-# all_hist <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/MARKdata/PP_capture_history_all_20180711.csv")
-# mark_trmt_all <- read.csv(text = all_hist, header = TRUE, stringsAsFactors = FALSE)
+all_hist <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/MARKdata/PP_capture_history_all_20180711.csv")
+mark_trmt_all <- read.csv(text = all_hist, header = TRUE, stringsAsFactors = FALSE)
 
 # prep data for RMark
 all_ms <- select(mark_trmt_all, captures) %>% dplyr::rename("ch" = "captures")
@@ -341,7 +345,7 @@ ms.ddl$Psi$PB_time[ms.ddl$Psi$time %in% PB_time_after] = 1
 #################################################################################
 #                                                                               #
 #       If you don't want to run this yourself, you can read in the             #
-#       RMark results from the GitHub repo instead (see line 364)               #
+#       RMark results from the GitHub repo instead (see line 366)               #
 #                                                                               #
 #################################################################################
 
@@ -361,7 +365,7 @@ rmark_results <- ms.summary
 #write.csv(ms.summary$results$real, "data/MARKdata/MARK_SerenityRun/top_model_summary_[DATE].csv")
 
 # read in Mark results if skipping that section
-# rmark_results <- read.csv("data/MARKdata/MARK_SerenityRun/top_model_summary_20180712.csv", stringsAsFactors = FALSE)
+rmark_results <- read.csv("data/MARKdata/MARK_SerenityRun/top_model_summary_20180712.csv", stringsAsFactors = FALSE)
 
 # prep RMark results for plotting
 rmark_results$time = c("Before", "After", "Before", "After", "Before", "After", NA, 
@@ -387,7 +391,7 @@ plot_rmark$time <- factor(plot_rmark$time, levels = c("Before", "After"))
 
 # plot RMark results
 
-x_axis_title <- expression(paste(bolditalic("C. baileyi"), bold(" establishment")))
+x_axis_title <- expression(paste(italic("C. baileyi"), " establishment"))
 
 plot2a <- ggplot(plot_rmark[(plot_rmark$metric == "S"),], color = Treatment) +
   geom_pointrange(aes(x = time, y = estimate, 
@@ -396,11 +400,11 @@ plot2a <- ggplot(plot_rmark[(plot_rmark$metric == "S"),], color = Treatment) +
                   position = position_dodge(.1), size = .75) +
   scale_colour_manual(values = cbbPalette) + 
   xlab(x_axis_title) +
-  ylab("Estimated survival") + # how to you insert greek letters into titles?
+  ylab("Estimated survival") + 
   labs(subtitle = 'a') +
   theme_classic() +
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
-        plot.subtitle = element_text(size = 14, hjust = -.2),
+        plot.subtitle = element_text(size = 14, hjust = -.4),
         axis.line = element_line(size = .25),
         axis.title.x = element_text(size = 12, margin = margin(t = 10)),
         axis.title.y = element_text(size = 12, margin = margin(r = 10)),
@@ -409,7 +413,6 @@ plot2a <- ggplot(plot_rmark[(plot_rmark$metric == "S"),], color = Treatment) +
         legend.position = "top",
         legend.title = element_blank(),
         plot.margin = margin(l = 5, t = 20))
-#ggsave("figures/ms_figures/Survival.png", width = 4, height = 4)
 
 plot2b <- ggplot(plot_rmark[(plot_rmark$metric == "Psi"),]) +
   geom_pointrange(aes(x = time, y = estimate,
@@ -423,7 +426,7 @@ plot2b <- ggplot(plot_rmark[(plot_rmark$metric == "Psi"),]) +
   labs(subtitle = 'b') +
   theme_classic() +
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
-        plot.subtitle = element_text(size = 14, hjust = -.2),
+        plot.subtitle = element_text(size = 14, hjust = -.35),
         axis.line = element_line(size = .25),
         axis.title.x = element_text(size = 12, margin = margin(t = 10)),
         axis.title.y = element_text(size = 12, margin = margin(r = 10)),
@@ -432,7 +435,6 @@ plot2b <- ggplot(plot_rmark[(plot_rmark$metric == "Psi"),]) +
         legend.position = "top", 
         legend.title = element_blank(),
         plot.margin = margin(l = 20))
-#ggsave("figures/ms_figures/TransitionProbability.png", width = 4, height = 4)
 
 #------------------------------------------------------------
 # Number of New PP Individuals Showing Up on Plots
@@ -466,7 +468,9 @@ new_PP_per_plot <- new_PP_per_plot %>%
 
 # rename plot_treatments for plotting
 new_PP_per_plot$plot_type <- plyr::revalue(new_PP_per_plot$plot_type, c("Krat_Exclosure" = "KR Exclosure"))
-y_axis_title <- expression(paste("Avg. ", italic("C. penicillatus"), " individuals"))
+
+y_axis_title <- expression(atop(paste(italic("C. penicillatus"), " individuals"),
+                                "(average per plot)"))
 
 plot2c <- ggplot(new_PP_per_plot, aes(x = year,
                                       y = avg_plot_sum_by_year,
@@ -488,7 +492,7 @@ plot2c <- ggplot(new_PP_per_plot, aes(x = year,
   #guides(color = guide_legend(override.aes = list(size = 3))) +
   theme_classic() +
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
-        plot.subtitle = element_text(size = 14, hjust = -.08), 
+        plot.subtitle = element_text(size = 14, hjust = -.15), 
         axis.title.x = element_text(size = 12, margin = margin(t = 10)),
         axis.title.y = element_text(size = 12, margin = margin(r = 10)),
         axis.text.x = element_text(size = 10),
@@ -496,18 +500,23 @@ plot2c <- ggplot(new_PP_per_plot, aes(x = year,
         legend.position = "top", 
         legend.title = element_blank(),
         plot.margin = margin(r = 10, t = 15))
+
 #ggsave("figures/ms_figures/new_PP_per_year.png", plot2c, width = 6, height = 4.5)
 
 # make figure for ms
 plot2 <- plot2a + plot2b - plot2c + plot_layout(ncol = 1)
-#ggsave("figures/ms_figures/PP_metrics_infiltraton.png", plot2, width = 6, height = 7, dpi = 600)
+plot2
+
+# ggsave("figures/ms_figures/PP_metrics.png", plot2, width = 6, height = 7, dpi = 600)
+# ggsave("figures/ms_figures/PP_metrics_tiff.tiff", 
+#        plot2, width = 6, height = 7, dpi = 600, compression = "lzw")
 
 #############################################################
 # Ecosystem Functioning Aspects of Patch Preference
 #############################################################
 
 # download biomass data by plot from portalr
-biomass_data <- portalr::get_rodent_data(path = "repo", level = "Plot", output = "biomass")
+biomass_data <- portalr::biomass(path = "repo", level = "Plot")
 
 # select certain treatments and filter by time
 biomass_dat <- biomass_data %>%
@@ -542,6 +551,9 @@ biomass_spread <- tidyr::spread(biomass_total, treatment, totals)
 # ratio
 biomass_ratio <- biomass_spread %>% mutate(EX_to_CO_ratio = exclosure/control)
 
+y_axis_title <- expression(atop("Biomass ratio",
+                                "(kangaroo rat exclosure:control)"))
+
 plot3 <- ggplot(biomass_ratio, aes(year, EX_to_CO_ratio, group = 1)) +
   annotate(geom = "rect", fill = "grey", alpha = 0.4,
            xmin = 1995, xmax = 1998,
@@ -551,7 +563,7 @@ plot3 <- ggplot(biomass_ratio, aes(year, EX_to_CO_ratio, group = 1)) +
            ymin = -Inf, ymax = Inf) +
   geom_point(size = 2) +
   geom_line() +
-  ylab("KR exlcosure:control biomass") +
+  ylab(y_axis_title) +
   xlab("Year") + 
   theme_classic() +
   theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
@@ -561,4 +573,5 @@ plot3 <- ggplot(biomass_ratio, aes(year, EX_to_CO_ratio, group = 1)) +
         axis.text.y = element_text(size = 8),
         plot.margin = margin(10, 15, 10, 10))
 
-ggsave("figures/ms_figures/biomass_ratio.png", plot3, width = 3.5, height = 3, dpi = 600)
+plot3
+# ggsave("figures/ms_figures/biomass_ratio.png", plot3, width = 3.5, height = 3, dpi = 600)
