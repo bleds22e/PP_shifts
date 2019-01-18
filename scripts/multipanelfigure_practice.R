@@ -4,6 +4,37 @@
 
 library(multipanelfigure)
 
+# Supplemental figure 1
+
+y_axis_title <- expression("C. baileyi individuals \n (Average per plot)")
+
+y_label <- expression(atop(paste(italic("C. baileyi"), " individuals"),
+                           "(Average per plot)"))
+
+(plot_supp1 <- ggplot(PB_only, aes(x = year, y = avg_ind_per_prd, color = plot_type, group = plot_type)) +
+    geom_line(size = 1) +
+    geom_point(size = 2) +
+    geom_errorbar(aes(ymin = ymin, ymax = ymax), width = .5) +
+    scale_color_manual(values = cbbPalette) +
+    xlab("Year") +
+    ylab(y_label) +
+    labs(color = "Plot type") +
+    theme_classic() +
+    theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
+          axis.title.x = element_text(size = 12, margin = margin(t = 10)),
+          axis.title.y = element_text(size = 12, margin = margin(r = 10)),
+          axis.text.x = element_text(size = 10),
+          axis.text.y = element_text(size = 10),
+          legend.title = element_blank(),
+          plot.margin = margin(r = 15, l = 15)))
+# ggsave("figures/ms_figures/supp1.png", plot_supp1, height = 3, width = 6, dpi = 600)
+# ggsave("figures/ms_figures/supp1_tiff.tiff", 
+#        plot_supp1, height = 3, width = 6, dpi = 600, compression = "lzw")
+# ggsave("figures/ms_figures/supp1_jpeg.jpg", plot_supp1, height = 3, width = 6, dpi = 600)
+
+
+
+
 # Figure 1
 
 x_axis_title <- expression(paste("Mean ", italic("C. baileyi"), " per plot"))
