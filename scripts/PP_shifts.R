@@ -4,9 +4,6 @@
 
 # LIBRARIES and SOURCE CODE #
 
-# install portalr if not already done
-# devtools::install_github("weecology/portalr")
-
 library(tidyverse)
 library(portalr)
 library(RCurl)
@@ -336,7 +333,7 @@ new_PP_per_plot <- new_PP_per_plot %>%
 
 
 #############################################################
-# Ecosystem Functioning Aspects of Patch Preference
+# System-level Aspects of Patch Preference
 #############################################################
 
 # download biomass data by plot from portalr
