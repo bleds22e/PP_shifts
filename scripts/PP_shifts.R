@@ -120,9 +120,9 @@ PB_only <- filter(avg_by_year_plotting, species == "PB")
 
 (plot_supp1 <- plot_PB_timeseries_by_treament(PB_only))
 
-# ggsave("figures/ms_figures/supp1.png", plot_supp1, height = 3, width = 6, dpi = 600)
-# ggsave("figures/ms_figures/supp1_tiff.tiff",
-#        plot_supp1, height = 3, width = 6, dpi = 600, compression = "lzw")
+# ggsave("figures/FigureS1.png", plot_supp1, height = 3, width = 6, dpi = 600)
+# ggsave("figures/FigureS1.tiff", plot_supp1, 
+#        height = 3, width = 6, dpi = 600, compression = "lzw")
 
 #-----------------------------------------------------------
 # Find Deviation from Equal PP Populations (1:1 line)
@@ -193,9 +193,9 @@ PP_and_PB_fulljoin[is.na(PP_and_PB_fulljoin)] <- 0 # to line up PB abundance for
 # use `patchwork` to put them together into one figure
 (plot1 <- (plot1a/plot1b) | plot1c)
 
-# ggsave("figures/ms_figures/Figure1.png", plot1, width = 7, height = 3.5, dpi = 600)
-# ggsave("figures/ms_figures/Figure1_tiff.tiff",
-#       plot1, width = 7, height = 3.5, dpi = 600, compression = 'lzw')
+# ggsave("figures/Figure1.png", plot1, width = 7, height = 3.5, dpi = 600)
+# ggsave("figures/Figure1.tiff", plot1, 
+#        width = 7, height = 3.5, dpi = 600, compression = 'lzw')
 
 
 
@@ -329,8 +329,8 @@ new_PP_per_plot <- new_PP_per_plot %>%
 # Make Figure 2
 (plot2 <- plot2a + plot2b - plot2c + plot_layout(ncol = 1))
 
-# ggsave("figures/ms_figures/PP_metrics.png", plot2, width = 6, height = 7, dpi = 600)
-# ggsave("figures/ms_figures/PP_metrics_tiff.tiff", 
+# ggsave("figures/ms_figures/Figure2.png", plot2, width = 6, height = 7, dpi = 600)
+# ggsave("figures/ms_figures/Figure2.tiff", 
 #        plot2, width = 6, height = 7, dpi = 600, compression = "lzw")
 
 
