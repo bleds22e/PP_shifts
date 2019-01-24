@@ -230,7 +230,7 @@ periods_all = seq(min(PP_only$period), max(PP_only$period))
 mark_trmt_all = create_trmt_hist(PP_only, tags_all, periods_all)
 
 # load in capture histories if already created
-# all_hist <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/MARKdata/PP_capture_history_all_20180711.csv")
+# all_hist <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/PP_capture_history_all_20180711.csv")
 # mark_trmt_all <- read.csv(text = all_hist, header = TRUE, stringsAsFactors = FALSE)
 
 # prep data for RMark
@@ -280,10 +280,10 @@ names(ms.results)
 ms.summary = ms.results$S.stratum.p.dot.Psi.s
 ms.summary
 rmark_results <- ms.summary
-# write.csv(ms.summary$results$real, "data/MARKdata/MARK_SerenityRun/top_model_summary_[DATE].csv")
+# write.csv(ms.summary$results$real, "data/MARKdatatop_model_summary_[DATE].csv")
 
 # read in Mark results if skipping that section
-# rmark_results <- read.csv("data/MARKdata/MARK_SerenityRun/top_model_summary_20180712.csv", stringsAsFactors = FALSE)
+# rmark_results <- read.csv("data/top_model_summary_20180712.csv", stringsAsFactors = FALSE)
 
 # plot RMark results
 
@@ -329,9 +329,9 @@ new_PP_per_plot <- new_PP_per_plot %>%
 # Make Figure 2
 (plot2 <- plot2a + plot2b - plot2c + plot_layout(ncol = 1))
 
-# ggsave("figures/ms_figures/Figure2.png", plot2, width = 6, height = 7, dpi = 600)
-# ggsave("figures/ms_figures/Figure2.tiff", 
-#        plot2, width = 6, height = 7, dpi = 600, compression = "lzw")
+# ggsave("figures/Figure2.png", plot2, width = 6, height = 7, dpi = 600)
+# ggsave("figures/Figure2.tiff", plot2,  
+#        width = 6, height = 7, dpi = 600, compression = "lzw")
 
 
 
@@ -376,4 +376,4 @@ biomass_spread <- tidyr::spread(biomass_total, treatment, totals)
 biomass_ratio <- biomass_spread %>% mutate(EX_to_CO_ratio = exclosure/control)
 
 (plot3 <- plot_biomass_ratio(biomass_ratio))
-# ggsave("figures/ms_figures/biomass_ratio.png", plot3, width = 3.5, height = 3, dpi = 600)
+# ggsave("figures/Figure3.png", plot3, width = 3.5, height = 3, dpi = 600)
