@@ -11,12 +11,9 @@ The manuscript for this project is currently under review at Ecology.
 To conduct the analyses in the manuscript, you'll need the two scripts in the "scripts" folder:
 
   * _scripts/PP_shifts.R_: contains all the analyses and figures in the paper
-  
     * You can technically source this code, and it should run smoothly, assuming all packages are installed
     * **HOWEVER!**--this includes running some extensive models in RMark, which will take a long time (see _Tip #3_ below)
-<br>  
   * _scripts/functions.R_: contains all functions used in the PP_shifts.R script
-  
     * sourced in the PP_shifts.R script
     * includes both data-focused functions and plotting functions
 
