@@ -1,7 +1,7 @@
 # PP Shifts
 ## "Temporal changes in species composition affect a ubiquitous species' views of patch quality"
 
-This repo contains analyses for my project on how _C. penicillatus's_ perception of patch quality has changed through time in response to the colonization of _c. baileyi_ at The Protal Project.
+This repo contains analyses for my project on how _C. penicillatus's_ perception of patch quality has changed through time in response to the colonization of _C. baileyi_ at The Protal Project.
 
 The manuscript for this project is currently under review at Ecology.
 
@@ -13,7 +13,7 @@ To conduct the analyses in the manuscript, you'll need the two scripts in the "s
   * _scripts/PP_shifts.R_: contains all the analyses and figures in the paper
   
     * You can technically source this code, and it should run smoothly, assuming all packages are installed
-    * **HOWEVER!**--this includes running some extensive models in RMark, which will take a long time (see _Tips_ section below)
+    * **HOWEVER!**--this includes running some extensive models in RMark, which will take a long time (see _Tip #3_ below)
 <br>  
   * _scripts/functions.R_: contains all functions used in the PP_shifts.R script
   
@@ -53,3 +53,15 @@ To avoid this, you can load in the data from the latest run of the model. If you
 <br>
 
 ### Other Files in the Repo
+
+  * _data/_
+    * _all_model_results_20180712.csv_ output from all models from the latest RMark run
+    * _PP_capture_history_all_20180711.csv_ results from `create_trmt_hist()`
+    * _test_data_prepared.csv_ test data for `testthat` functions
+    * _top_model_summary_20180712.csv_ output from top model from latest RMark run   
+  * _figures/_ 
+    * manuscript figures
+  * _testthat/_ 
+    * _test_fuctions.r_ script with test functions to ensure functions are giving the expected outputs   
+  * _preliminary_work/_ 
+    * all the bits and pieces used in the project but not in the manuscript
