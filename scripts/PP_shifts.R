@@ -307,21 +307,21 @@ for (i in 1:length(tags_all)){
 # total number new PPs (avg plot sum by year)
 new_PP_per_plot <- first_period %>%
   filter(plot_type != "Removal") %>%
-  group_by(plot, year, plot_type) %>%
+  group_by(plot, month, year, plot_type) %>%
   summarise(count = n(species)) %>%
   ungroup()
-new_PP_per_plot <- new_PP_per_plot %>%
+new_PP_per_plot_summary <- new_PP_per_plot %>%
   group_by(year, plot_type) %>%
   summarise(avg_plot_sum_by_year = mean(count), se = plotrix::std.error(count))
 
 # plot new PPs
-new_PP_per_plot <- new_PP_per_plot %>%
+new_PP_per_plot_summary <- new_PP_per_plot_summary %>%
   mutate(ymin = avg_plot_sum_by_year - se,
          ymax = avg_plot_sum_by_year + se) %>%
   replace_na(list(avg_plot_sum_by_year = 0, se = 0, ymin = 0, ymax = 0))
 
 # plot new PP individuals
-(plot2c <- plot_new_PP_individuals(new_PP_per_plot))
+(plot2c <- plot_new_PP_individuals(new_PP_per_plot_summary))
 
 # Make Figure 2
 (plot2 <- plot2a + plot2b - plot2c + plot_layout(ncol = 1))
@@ -330,7 +330,63 @@ new_PP_per_plot <- new_PP_per_plot %>%
 # ggsave("figures/Figure2.tiff", plot2,  
 #        width = 6, height = 7, dpi = 600, compression = "lzw")
 
+# Run 2-way ANOVA on the data
 
+new_PP_per_plot$time_point <- NA
+
+for (i in 1:nrow(new_PP_per_plot)) {
+  if (new_PP_per_plot$year[i] < 1997) {
+    new_PP_per_plot$time_point[i] = "Before"
+  } else if (new_PP_per_plot$year[i] > 1997){
+    new_PP_per_plot$time_point[i] = "After"
+  } else {
+    if (new_PP_per_plot$month[i] < 7){
+      new_PP_per_plot$time_point[i] = "Before"
+    } else {
+      new_PP_per_plot$time_point[i] = "After"
+    }
+  }
+}
+
+new_PP_per_plot <- filter(new_PP_per_plot, year <= 2010)
+anova2w <- aov(count ~ plot_type * time_point, data = new_PP_per_plot)
+summary(anova2w)
+
+# 2-way ANOVA by year
+
+new_PP_per_plot <- new_PP_per_plot %>% 
+  group_by(year, plot_type) %>% 
+  summarise(count = sum(count))
+
+new_PP_per_plot$time_point <- NA
+
+for (i in 1:nrow(new_PP_per_plot)) {
+  if (new_PP_per_plot$year[i] <= 1997) {
+    new_PP_per_plot$time_point[i] = "Before"
+  } else {
+    new_PP_per_plot$time_point[i] = "After"
+  }
+}
+
+new_PP_per_plot <- filter(new_PP_per_plot, year <= 2010)
+anova2w <- aov(count ~ plot_type * time_point, data = new_PP_per_plot)
+summary(anova2w)
+
+# 2-way ANOVA by avg per plot per year
+
+new_PP_per_plot_summary$time_point <- NA
+
+for (i in 1:nrow(new_PP_per_plot_summary)) {
+  if (new_PP_per_plot_summary$year[i] <= 1997) {
+    new_PP_per_plot_summary$time_point[i] = "Before"
+  } else {
+    new_PP_per_plot_summary$time_point[i] = "After"
+  }
+}
+
+new_PP_per_plot_summary <- filter(new_PP_per_plot_summary, year <= 2010)
+anova2w <- aov(avg_plot_sum_by_year ~ plot_type * time_point, data = new_PP_per_plot_summary)
+summary(anova2w)
 
 #############################################################
 # System-level Aspects of Patch Preference
