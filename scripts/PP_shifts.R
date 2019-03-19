@@ -330,7 +330,13 @@ new_PP_per_plot_summary <- new_PP_per_plot_summary %>%
 # ggsave("figures/Figure2.tiff", plot2,  
 #        width = 6, height = 7, dpi = 600, compression = "lzw")
 
-# Run 2-way ANOVA on the data
+
+### RUN ANOVAS ###
+# Things to deal with:
+#   - which way to summarize the data
+#   - what about after 2010? seems to be washing out treatment and interaction
+
+# 2-way ANOVA by monthly count
 
 new_PP_per_plot$time_point <- NA
 
@@ -352,6 +358,8 @@ new_PP_per_plot <- filter(new_PP_per_plot, year <= 2010)
 anova2w <- aov(count ~ plot_type * time_point, data = new_PP_per_plot)
 summary(anova2w)
 
+
+
 # 2-way ANOVA by year
 
 new_PP_per_plot <- new_PP_per_plot %>% 
@@ -371,6 +379,11 @@ for (i in 1:nrow(new_PP_per_plot)) {
 new_PP_per_plot <- filter(new_PP_per_plot, year <= 2010)
 anova2w <- aov(count ~ plot_type * time_point, data = new_PP_per_plot)
 summary(anova2w)
+
+ggplot(data = new_PP_per_plot, aes(x = year, y = count, color = plot_type)) +
+  geom_point() +
+  geom_line() +
+  theme_bw()
 
 # 2-way ANOVA by avg per plot per year
 
