@@ -1,0 +1,17 @@
+"","S","p","Psi","model","npar","AICc","DeltaAICc","weight","Deviance"
+"16","~-1 + stratum * PB_time","~1","~-1 + stratum:tostratum * PB_time","S(~-1 + stratum * PB_time)p(~1)Psi(~-1 + stratum:tostratum * PB_time)",20,20217.5634759743,0,0.826306348591769,13239.85
+"15","~-1 + stratum * PB_time","~1","~-1 + stratum:tostratum + PB_time","S(~-1 + stratum * PB_time)p(~1)Psi(~-1 + stratum:tostratum + PB_time)",14,20221.6506763096,4.08720033528516,0.107057429972658,13256.003
+"14","~-1 + stratum * PB_time","~1","~-1 + stratum:tostratum","S(~-1 + stratum * PB_time)p(~1)Psi(~-1 + stratum:tostratum)",13,20222.5989105691,5.03543459477805,0.0666362210584389,13258.96
+"13","~-1 + stratum * PB_time","~1","~1","S(~-1 + stratum * PB_time)p(~1)Psi(~1)",8,20260.5854964849,43.0220205105943,3.75861666888066e-10,13306.982
+"8","~-1 + stratum + PB_time","~1","~-1 + stratum:tostratum * PB_time","S(~-1 + stratum + PB_time)p(~1)Psi(~-1 + stratum:tostratum * PB_time)",18,20273.2370255046,55.6735495302855,6.72641122886536e-13,13299.548
+"12","~-1 + stratum","~1","~-1 + stratum:tostratum * PB_time","S(~-1 + stratum)p(~1)Psi(~-1 + stratum:tostratum * PB_time)",17,20273.4677446808,55.9042687065194,5.99353964623066e-13,13301.79
+"11","~-1 + stratum","~1","~-1 + stratum:tostratum + PB_time","S(~-1 + stratum)p(~1)Psi(~-1 + stratum:tostratum + PB_time)",11,20290.7132628947,73.1497869203231,0,13331.09
+"7","~-1 + stratum + PB_time","~1","~-1 + stratum:tostratum + PB_time","S(~-1 + stratum + PB_time)p(~1)Psi(~-1 + stratum:tostratum + PB_time)",12,20291.3337728623,73.7702968879494,0,13329.704
+"10","~-1 + stratum","~1","~-1 + stratum:tostratum","S(~-1 + stratum)p(~1)Psi(~-1 + stratum:tostratum)",10,20302.3813803719,84.8179043976052,0,13344.765
+"6","~-1 + stratum + PB_time","~1","~-1 + stratum:tostratum","S(~-1 + stratum + PB_time)p(~1)Psi(~-1 + stratum:tostratum)",11,20303.3572628947,85.7937869203233,0,13343.734
+"9","~-1 + stratum","~1","~1","S(~-1 + stratum)p(~1)Psi(~1)",5,20342.4773691443,124.913893169956,0,13394.886
+"5","~-1 + stratum + PB_time","~1","~1","S(~-1 + stratum + PB_time)p(~1)Psi(~1)",6,20343.0941188505,125.530642876209,0,13393.499
+"4","~1","~1","~-1 + stratum:tostratum * PB_time","S(~1)p(~1)Psi(~-1 + stratum:tostratum * PB_time)",15,20716.9010703785,499.337594404151,0,13749.244
+"3","~1","~1","~-1 + stratum:tostratum + PB_time","S(~1)p(~1)Psi(~-1 + stratum:tostratum + PB_time)",9,20724.300125,506.736649025672,0,13768.691
+"2","~1","~1","~-1 + stratum:tostratum","S(~1)p(~1)Psi(~-1 + stratum:tostratum)",8,20727.1754964849,509.612020510594,0,13773.571
+"1","~1","~1","~1","S(~1)p(~1)Psi(~1)",3,20821.3607464877,603.79727051334,0,13877.775
