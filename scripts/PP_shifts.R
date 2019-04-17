@@ -40,7 +40,8 @@ tdat <- read.csv(text = trapping, header = TRUE, stringsAsFactors = FALSE)
 #---------------------------------------------------------
 
 # make it match Sarah Supp's data structure to use her code
-all <- repo_data_to_Supp_data(rdat, sdat)
+all <- repo_data_to_Supp_data(rdat, sdat) %>% 
+  filter(year <= 2010)
 
 # Find and Remove Periods with One Day of Trapping
 
@@ -161,7 +162,9 @@ x = PP_PB_join$PB_avg_indiv
 y = PP_PB_join$PP_residuals
 
 # test for autoregressive structure
-auto.arima(PP_linear_model$PP_residuals)
+auto.arima(y)
+y_diff <- diff(y)
+auto.arima(y_diff)
 
 # build and compare models
 PP_PB_model_linear <- gls(y ~ x)
@@ -276,11 +279,11 @@ names(ms.results)
 
 ms.summary = ms.results$S.stratum.p.dot.Psi.s
 ms.summary
-rmark_results <- ms.summary
+rmark_results <- ms.summary$results$real
 # write.csv(ms.summary$results$real, "data/MARKdatatop_model_summary_[DATE].csv")
 
 # read in Mark results if skipping that section
-# rmark_results <- read.csv("data/top_model_summary_20180712.csv", stringsAsFactors = FALSE)
+rmark_results <- read.csv("data/top_model_summary_20190416.csv", stringsAsFactors = FALSE)
 
 # plot RMark results
 
@@ -407,19 +410,30 @@ summary(anova2w)
 
 # download biomass data by plot from portalr
 biomass_data <- portalr::biomass(path = "repo", level = "Plot")
+energy_data <- portalr::energy(path = "repo", level = "Plot")
 
 # select certain treatments and filter by time
 biomass_dat <- biomass_data %>%
   filter(treatment == "control" | treatment == "exclosure", 
          period >= 118 & period <= 433) # get the right time periods
+energy_dat <- energy_data %>%
+  filter(treatment == "control" | treatment == "exclosure", 
+         period >= 118 & period <= 433) 
+
 
 # add a year column for later summarization
 year_prd_pairs <- unique(tdat[,c("year", "period")]) # get associated years and periods
 biomass_dat$year = NA
+energy_dat$year = NA
 
 for (i in 1:nrow(biomass_dat)){
   prd <- biomass_dat$period[i]
   biomass_dat$year[i] = year_prd_pairs$year[year_prd_pairs$period == prd]
+}
+
+for (i in 1:nrow(energy_dat)){
+  prd <- energy_dat$period[i]
+  energy_dat$year[i] = year_prd_pairs$year[year_prd_pairs$period == prd]
 }
 
 #------------------------------------------------------------
