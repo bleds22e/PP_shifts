@@ -462,7 +462,7 @@ biomass_spread <- tidyr::spread(biomass_total, treatment, totals)
 biomass_ratio <- biomass_spread %>% mutate(EX_to_CO_ratio = exclosure/control)
 
 (plot3 <- plot_biomass_ratio(biomass_ratio))
-# ggsave("figures/Figure3.png", plot3, width = 3.5, height = 3, dpi = 600)
+# ggsave("figures/1989-2010/Figure3.png", plot3, width = 3.5, height = 3, dpi = 600)
 
 ## ENERGY ##
 
@@ -482,4 +482,4 @@ energy_spread <- tidyr::spread(energy_total, treatment, totals)
 energy_ratio <- energy_spread %>% mutate(EX_to_CO_ratio = exclosure/control)
 
 (plot3 <- plot_energy_ratio(energy_ratio))
-# ggsave("figures/Figure3.png", plot3, width = 3.5, height = 3, dpi = 600)
+# ggsave("figures/1989-2010/Figure3_energy.png", plot3, width = 3.5, height = 3, dpi = 600)
