@@ -776,11 +776,10 @@ plot_new_PP_individuals <- function(data){
   # rename plot_treatments for plotting
   data$plot_type <- plyr::revalue(data$plot_type, c("Krat_Exclosure" = "KR Exclosure"))
   
-  y_axis_title <- expression(atop(paste(italic("C. penicillatus"), " individuals"),
-                                  "(average per plot)"))
+  y_axis_title <- expression(atop(paste(italic("C. penicillatus"), " individuals")))
   
   plot <- ggplot(data, aes(x = year,
-                           y = avg_plot_sum_by_year,
+                           y = sum_by_year,
                            color = plot_type,
                            group = plot_type)) +
     annotate(geom = "rect", fill = "grey", alpha = 0.4,
@@ -792,7 +791,7 @@ plot_new_PP_individuals <- function(data){
     scale_color_manual(values = cbbPalette, name = "Plot Type") +
     geom_point(size = 2.5) +
     geom_line() +
-    geom_errorbar(aes(ymin = ymin, ymax = ymax), width = .5) +
+    #geom_errorbar(aes(ymin = ymin, ymax = ymax), width = .5) +
     ylab(y_axis_title) +
     xlab("Year") +
     labs(subtitle = 'c') +
@@ -818,6 +817,36 @@ plot_biomass_ratio <- function(data){
   # function for plotting KR exclosure:control ratio
   
   y_axis_title <- expression(atop("Biomass ratio",
+                                  "(kangaroo rat exclosure:control)"))
+  
+  plot <- ggplot(data, aes(year, EX_to_CO_ratio, group = 1)) +
+    annotate(geom = "rect", fill = "grey", alpha = 0.4,
+             xmin = 1995, xmax = 1998,
+             ymin = -Inf, ymax = Inf) +
+    annotate(geom = "rect", fill = "grey", alpha = 0.4,
+             xmin = 2008, xmax = 2010, 
+             ymin = -Inf, ymax = Inf) +
+    geom_point(size = 2) +
+    geom_line() +
+    ylab(y_axis_title) +
+    xlab("Year") + 
+    theme_classic() +
+    theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
+          axis.title.x = element_text(size = 10, margin = margin(t = 10)),
+          axis.title.y = element_text(size = 10, margin = margin(r = 10)),
+          axis.text.x = element_text(size = 8),
+          axis.text.y = element_text(size = 8),
+          plot.margin = margin(10, 15, 10, 10))
+  
+  return(plot)
+  
+}
+
+plot_energy_ratio <- function(data){
+  
+  # function for plotting KR exclosure:control ratio
+  
+  y_axis_title <- expression(atop("Energy ratio",
                                   "(kangaroo rat exclosure:control)"))
   
   plot <- ggplot(data, aes(year, EX_to_CO_ratio, group = 1)) +
