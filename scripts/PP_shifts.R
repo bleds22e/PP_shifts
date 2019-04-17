@@ -118,8 +118,8 @@ PB_only <- filter(avg_by_year_plotting, species == "PB")
 
 (plot_supp1 <- plot_PB_timeseries_by_treament(PB_only))
 
-# ggsave("figures/FigureS1.png", plot_supp1, height = 3, width = 6, dpi = 600)
-# ggsave("figures/FigureS1.tiff", plot_supp1, 
+# ggsave("figures/1989-2010/FigureS1.png", plot_supp1, height = 3, width = 6, dpi = 600)
+# ggsave("figures/1989-2010/FigureS1.tiff", plot_supp1,
 #        height = 3, width = 6, dpi = 600, compression = "lzw")
 
 #-----------------------------------------------------------
@@ -193,11 +193,9 @@ PP_and_PB_fulljoin[is.na(PP_and_PB_fulljoin)] <- 0 # to line up PB abundance for
 # use `patchwork` to put them together into one figure
 (plot1 <- (plot1a/plot1b) | plot1c)
 
-# ggsave("figures/Figure1.png", plot1, width = 7, height = 3.5, dpi = 600)
-# ggsave("figures/Figure1.tiff", plot1, 
-#        width = 7, height = 3.5, dpi = 600, compression = 'lzw')
-
-
+ggsave("figures/1989-2010/Figure1.png", plot1, width = 7, height = 3.5, dpi = 600)
+ggsave("figures/1989-2010/Figure1.tiff", plot1,
+       width = 7, height = 3.5, dpi = 600, compression = 'lzw')
 
 
 ############################################################
@@ -313,61 +311,10 @@ new_PP_per_plot <- first_period %>%
   group_by(plot, month, year, plot_type) %>%
   summarise(count = n(species)) %>%
   ungroup()
-new_PP_per_plot_summary <- new_PP_per_plot %>%
-  group_by(year, plot_type) %>%
-  summarise(avg_plot_sum_by_year = mean(count), se = plotrix::std.error(count))
-
-# plot new PPs
-new_PP_per_plot_summary <- new_PP_per_plot_summary %>%
-  mutate(ymin = avg_plot_sum_by_year - se,
-         ymax = avg_plot_sum_by_year + se) %>%
-  replace_na(list(avg_plot_sum_by_year = 0, se = 0, ymin = 0, ymax = 0))
-
-# plot new PP individuals
-(plot2c <- plot_new_PP_individuals(new_PP_per_plot_summary))
-
-# Make Figure 2
-(plot2 <- plot2a + plot2b - plot2c + plot_layout(ncol = 1))
-
-# ggsave("figures/Figure2.png", plot2, width = 6, height = 7, dpi = 600)
-# ggsave("figures/Figure2.tiff", plot2,  
-#        width = 6, height = 7, dpi = 600, compression = "lzw")
-
-
-### RUN ANOVAS ###
-# Things to deal with:
-#   - which way to summarize the data
-#   - what about after 2010? seems to be washing out treatment and interaction
-
-# 2-way ANOVA by monthly count
-
-new_PP_per_plot$time_point <- NA
-
-for (i in 1:nrow(new_PP_per_plot)) {
-  if (new_PP_per_plot$year[i] < 1997) {
-    new_PP_per_plot$time_point[i] = "Before"
-  } else if (new_PP_per_plot$year[i] > 1997){
-    new_PP_per_plot$time_point[i] = "After"
-  } else {
-    if (new_PP_per_plot$month[i] < 7){
-      new_PP_per_plot$time_point[i] = "Before"
-    } else {
-      new_PP_per_plot$time_point[i] = "After"
-    }
-  }
-}
-
-new_PP_per_plot <- filter(new_PP_per_plot, year <= 2010)
-anova2w <- aov(count ~ plot_type * time_point, data = new_PP_per_plot)
-summary(anova2w)
-
-
-
-# 2-way ANOVA by year
 
 new_PP_per_plot <- new_PP_per_plot %>% 
   group_by(year, plot_type) %>% 
-  summarise(count = sum(count))
+  summarise(sum_by_year = sum(count))
 
 new_PP_per_plot$time_point <- NA
 
@@ -379,30 +326,89 @@ for (i in 1:nrow(new_PP_per_plot)) {
   }
 }
 
-new_PP_per_plot <- filter(new_PP_per_plot, year <= 2010)
-anova2w <- aov(count ~ plot_type * time_point, data = new_PP_per_plot)
+anova2w <- aov(sum_by_year ~ plot_type * time_point, data = new_PP_per_plot)
 summary(anova2w)
 
-ggplot(data = new_PP_per_plot, aes(x = year, y = count, color = plot_type)) +
-  geom_point() +
-  geom_line() +
-  theme_bw()
+# plot new PP individuals
+(plot2c <- plot_new_PP_individuals(new_PP_per_plot))
+
+# Make Figure 2
+(plot2 <- plot2a + plot2b - plot2c + plot_layout(ncol = 1))
+
+ggsave("figures/1989-2010/Figure2.png", plot2, width = 6, height = 7, dpi = 600)
+ggsave("figures/1989-2010/Figure2.tiff", plot2,
+       width = 6, height = 7, dpi = 600, compression = "lzw")
+
+
+### RUN ANOVAS ###
+# Things to deal with:
+#   - which way to summarize the data
+#   - what about after 2010? seems to be washing out treatment and interaction
+
+# 2-way ANOVA by monthly count
+
+# new_PP_per_plot$time_point <- NA
+# 
+# for (i in 1:nrow(new_PP_per_plot)) {
+#   if (new_PP_per_plot$year[i] < 1997) {
+#     new_PP_per_plot$time_point[i] = "Before"
+#   } else if (new_PP_per_plot$year[i] > 1997){
+#     new_PP_per_plot$time_point[i] = "After"
+#   } else {
+#     if (new_PP_per_plot$month[i] < 7){
+#       new_PP_per_plot$time_point[i] = "Before"
+#     } else {
+#       new_PP_per_plot$time_point[i] = "After"
+#     }
+#   }
+# }
+# 
+# new_PP_per_plot <- filter(new_PP_per_plot, year <= 2010)
+# anova2w <- aov(count ~ plot_type * time_point, data = new_PP_per_plot)
+# summary(anova2w)
+# 
+
+
+# 2-way ANOVA by year
+
+# new_PP_per_plot <- new_PP_per_plot %>% 
+#   group_by(year, plot_type) %>% 
+#   summarise(count = sum(count))
+# 
+# new_PP_per_plot$time_point <- NA
+# 
+# for (i in 1:nrow(new_PP_per_plot)) {
+#   if (new_PP_per_plot$year[i] <= 1997) {
+#     new_PP_per_plot$time_point[i] = "Before"
+#   } else {
+#     new_PP_per_plot$time_point[i] = "After"
+#   }
+# }
+# 
+# new_PP_per_plot <- filter(new_PP_per_plot, year <= 2010)
+# anova2w <- aov(count ~ plot_type * time_point, data = new_PP_per_plot)
+# summary(anova2w)
+# 
+# ggplot(data = new_PP_per_plot, aes(x = year, y = count, color = plot_type)) +
+#   geom_point() +
+#   geom_line() +
+#   theme_bw()
 
 # 2-way ANOVA by avg per plot per year
 
-new_PP_per_plot_summary$time_point <- NA
-
-for (i in 1:nrow(new_PP_per_plot_summary)) {
-  if (new_PP_per_plot_summary$year[i] <= 1997) {
-    new_PP_per_plot_summary$time_point[i] = "Before"
-  } else {
-    new_PP_per_plot_summary$time_point[i] = "After"
-  }
-}
-
-new_PP_per_plot_summary <- filter(new_PP_per_plot_summary, year <= 2010)
-anova2w <- aov(avg_plot_sum_by_year ~ plot_type * time_point, data = new_PP_per_plot_summary)
-summary(anova2w)
+# new_PP_per_plot_summary$time_point <- NA
+# 
+# for (i in 1:nrow(new_PP_per_plot_summary)) {
+#   if (new_PP_per_plot_summary$year[i] <= 1997) {
+#     new_PP_per_plot_summary$time_point[i] = "Before"
+#   } else {
+#     new_PP_per_plot_summary$time_point[i] = "After"
+#   }
+# }
+# 
+# new_PP_per_plot_summary <- filter(new_PP_per_plot_summary, year <= 2010)
+# anova2w <- aov(avg_plot_sum_by_year ~ plot_type * time_point, data = new_PP_per_plot_summary)
+# summary(anova2w)
 
 #############################################################
 # System-level Aspects of Patch Preference
@@ -456,4 +462,24 @@ biomass_spread <- tidyr::spread(biomass_total, treatment, totals)
 biomass_ratio <- biomass_spread %>% mutate(EX_to_CO_ratio = exclosure/control)
 
 (plot3 <- plot_biomass_ratio(biomass_ratio))
+# ggsave("figures/Figure3.png", plot3, width = 3.5, height = 3, dpi = 600)
+
+## ENERGY ##
+
+# sum across rows and rename column
+energy_dat_rowSums <- as.data.frame(rowSums(energy_dat[,4:24]))
+colnames(energy_dat_rowSums) <- c("rowSums")
+
+# summarise energy to get total by period and plot type
+energy_total <- cbind(energy_dat, energy_dat_rowSums) %>%
+  group_by(year, treatment) %>%
+  summarise(totals = sum(rowSums))
+
+# change the data structure to run the linear model
+energy_spread <- tidyr::spread(energy_total, treatment, totals)
+
+# ratio
+energy_ratio <- energy_spread %>% mutate(EX_to_CO_ratio = exclosure/control)
+
+(plot3 <- plot_energy_ratio(energy_ratio))
 # ggsave("figures/Figure3.png", plot3, width = 3.5, height = 3, dpi = 600)
