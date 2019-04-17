@@ -193,9 +193,9 @@ PP_and_PB_fulljoin[is.na(PP_and_PB_fulljoin)] <- 0 # to line up PB abundance for
 # use `patchwork` to put them together into one figure
 (plot1 <- (plot1a/plot1b) | plot1c)
 
-ggsave("figures/1989-2010/Figure1.png", plot1, width = 7, height = 3.5, dpi = 600)
-ggsave("figures/1989-2010/Figure1.tiff", plot1,
-       width = 7, height = 3.5, dpi = 600, compression = 'lzw')
+# ggsave("figures/1989-2010/Figure1.png", plot1, width = 7, height = 3.5, dpi = 600)
+# ggsave("figures/1989-2010/Figure1.tiff", plot1,
+#        width = 7, height = 3.5, dpi = 600, compression = 'lzw')
 
 
 ############################################################
@@ -225,33 +225,33 @@ periods_all = seq(min(PP_only$period), max(PP_only$period))
 #                                                                               #
 #################################################################################
 
-mark_trmt_all = create_trmt_hist(PP_only, tags_all, periods_all)
+# mark_trmt_all = create_trmt_hist(PP_only, tags_all, periods_all)
 
 # load in capture histories if already created
-# all_hist <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/PP_capture_history_all_20180711.csv")
-# mark_trmt_all <- read.csv(text = all_hist, header = TRUE, stringsAsFactors = FALSE)
+all_hist <- getURL("https://raw.githubusercontent.com/bleds22e/PP_shifts/master/data/PP_capture_history_all_20180711.csv")
+mark_trmt_all <- read.csv(text = all_hist, header = TRUE, stringsAsFactors = FALSE)
 
 # prep data for RMark
 all_ms <- select(mark_trmt_all, captures) %>% dplyr::rename("ch" = "captures")
 first_PP <- min(PP_only$period)
 
-# Process data
-ms.pr = process.data(all_ms, begin.time = first_PP, model = "Multistrata")
-
-# Create default design data
-ms.ddl = make.design.data(ms.pr)
-
-# add design covariates for PB era
-PB_time_after = as.factor(seq(PB_max, 433))
-
-ms.ddl$S$PB_time = 0
-ms.ddl$S$PB_time[ms.ddl$S$time %in% PB_time_after] = 1
-
-ms.ddl$p$PB_time = 0
-ms.ddl$p$PB_time[ms.ddl$p$time %in% PB_time_after] = 1
-
-ms.ddl$Psi$PB_time = 0
-ms.ddl$Psi$PB_time[ms.ddl$Psi$time %in% PB_time_after] = 1
+# # Process data
+# ms.pr = process.data(all_ms, begin.time = first_PP, model = "Multistrata")
+# 
+# # Create default design data
+# ms.ddl = make.design.data(ms.pr)
+# 
+# # add design covariates for PB era
+# PB_time_after = as.factor(seq(PB_max, 433))
+# 
+# ms.ddl$S$PB_time = 0
+# ms.ddl$S$PB_time[ms.ddl$S$time %in% PB_time_after] = 1
+# 
+# ms.ddl$p$PB_time = 0
+# ms.ddl$p$PB_time[ms.ddl$p$time %in% PB_time_after] = 1
+# 
+# ms.ddl$Psi$PB_time = 0
+# ms.ddl$Psi$PB_time[ms.ddl$Psi$time %in% PB_time_after] = 1
 
 # Run the models and examine the output
 
@@ -267,17 +267,17 @@ ms.ddl$Psi$PB_time[ms.ddl$Psi$time %in% PB_time_after] = 1
 
 # MarkViewer="open -a TextEdit" # edit to make results pop up on a Mac
 
-ms.results = run.ms(S_dot = NULL,
-                    S_stratum = list(formula = ~ -1 + stratum * PB_time),
-                    p_dot = list(formula = ~ 1),
-                    p_stratum = NULL,
-                    Psi_s = list(formula =  ~ -1 + stratum:tostratum * PB_time, link = "logit"))
-ms.results
-names(ms.results)
-
-ms.summary = ms.results$S.stratum.p.dot.Psi.s
-ms.summary
-rmark_results <- ms.summary$results$real
+# ms.results = run.ms(S_dot = NULL,
+#                     S_stratum = list(formula = ~ -1 + stratum * PB_time),
+#                     p_dot = list(formula = ~ 1),
+#                     p_stratum = NULL,
+#                     Psi_s = list(formula =  ~ -1 + stratum:tostratum * PB_time, link = "logit"))
+# ms.results
+# names(ms.results)
+# 
+# ms.summary = ms.results$S.stratum.p.dot.Psi.s
+# ms.summary
+# rmark_results <- ms.summary$results$real
 # write.csv(ms.summary$results$real, "data/MARKdatatop_model_summary_[DATE].csv")
 
 # read in Mark results if skipping that section
@@ -335,9 +335,9 @@ summary(anova2w)
 # Make Figure 2
 (plot2 <- plot2a + plot2b - plot2c + plot_layout(ncol = 1))
 
-ggsave("figures/1989-2010/Figure2.png", plot2, width = 6, height = 7, dpi = 600)
-ggsave("figures/1989-2010/Figure2.tiff", plot2,
-       width = 6, height = 7, dpi = 600, compression = "lzw")
+# ggsave("figures/1989-2010/Figure2.png", plot2, width = 6, height = 7, dpi = 600)
+# ggsave("figures/1989-2010/Figure2.tiff", plot2,
+#        width = 6, height = 7, dpi = 600, compression = "lzw")
 
 
 ### RUN ANOVAS ###
@@ -481,5 +481,5 @@ energy_spread <- tidyr::spread(energy_total, treatment, totals)
 # ratio
 energy_ratio <- energy_spread %>% mutate(EX_to_CO_ratio = exclosure/control)
 
-(plot3 <- plot_energy_ratio(energy_ratio))
-# ggsave("figures/1989-2010/Figure3_energy.png", plot3, width = 3.5, height = 3, dpi = 600)
+(plot3_energy <- plot_energy_ratio(energy_ratio))
+# ggsave("figures/1989-2010/Figure3_energy.png", plot3_energy, width = 3.5, height = 3, dpi = 600)
