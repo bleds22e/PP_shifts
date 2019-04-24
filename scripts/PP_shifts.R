@@ -43,6 +43,10 @@ tdat <- read.csv(text = trapping, header = TRUE, stringsAsFactors = FALSE)
 all <- repo_data_to_Supp_data(rdat, sdat) %>% 
   filter(year <= 2010)
 
+# make table of plots and treatment types
+plots_and_treatments <- unique(all[c("plot", "plot_type")]) %>% arrange(plot)
+all_plots_all_years <- all %>% tidyr::expand(nesting(plot, plot_type), year)
+
 # Find and Remove Periods with One Day of Trapping
 
 # summarize trapping
@@ -97,6 +101,12 @@ avg_by_year <- # count of individuals in each plot
   summarise(count = n(species)) %>%
   ungroup()
 
+all_plots_all_years_PP_PB <- all_plots_all_years %>%
+  tidyr::expand(nesting(plot, plot_type), species = c("PP", "PB"), year)
+avg_by_year <- full_join(all_plots_all_years_PP_PB, avg_by_year) %>%
+  filter(plot_type != "Removal")
+avg_by_year$count[is.na(avg_by_year$count)] <- 0
+
 avg_by_year <- # average by treatment type per year
   avg_by_year %>% 
   group_by(year, species, plot_type) %>%
@@ -114,7 +124,7 @@ avg_by_year_plotting <- avg_by_year %>%
 avg_by_year_plotting$plot_type <- plyr::revalue(avg_by_year$plot_type, c("Krat_Exclosure" = "KR Exclosure")) 
 
 # Plot PB by treatment
-PB_only <- filter(avg_by_year_plotting, species == "PB")
+PB_only <- filter(avg_by_year_plotting, species == "PB", year > 1994)
 
 (plot_supp1 <- plot_PB_timeseries_by_treament(PB_only))
 
@@ -307,14 +317,18 @@ for (i in 1:length(tags_all)){
 
 # total number new PPs (avg plot sum by year)
 new_PP_per_plot <- first_period %>%
-  filter(plot_type != "Removal") %>%
+  filter(plot_type != "Removal") %>% 
   group_by(plot, month, year, plot_type) %>%
   summarise(count = n(species)) %>%
   ungroup()
+new_PP_per_plot <- new_PP_per_plot %>%
+  group_by(year, plot_type, plot) %>% 
+  summarise(count = sum(count))
 
-new_PP_per_plot <- new_PP_per_plot %>% 
-  group_by(year, plot_type) %>% 
-  summarise(sum_by_year = sum(count))
+# put zeros where they belong
+new_PP_per_plot <- full_join(all_plots_all_years, new_PP_per_plot) %>%
+  filter(plot_type != "Removal")
+new_PP_per_plot$count[is.na(new_PP_per_plot$count)] <- 0
 
 new_PP_per_plot$time_point <- NA
 
@@ -326,11 +340,21 @@ for (i in 1:nrow(new_PP_per_plot)) {
   }
 }
 
-anova2w <- aov(sum_by_year ~ plot_type * time_point, data = new_PP_per_plot)
-summary(anova2w)
+results.lme <- lme(count ~ plot_type*time_point, random = list(~ 1 | year, ~ 1 | plot), data = new_PP_per_plot)
+anova(results.lme)
+
+# calculate mean and standard error for plotting
+
+new_PP_per_plot_summary <- new_PP_per_plot %>% 
+  group_by(year, plot_type) %>% 
+  summarise(avg_plot_sum_by_year = mean(count), se = plotrix::std.error(count))
+
+new_PP_per_plot_summary <- new_PP_per_plot_summary %>%
+  mutate(ymin = avg_plot_sum_by_year - se,
+         ymax = avg_plot_sum_by_year + se) 
 
 # plot new PP individuals
-(plot2c <- plot_new_PP_individuals(new_PP_per_plot))
+(plot2c <- plot_new_PP_individuals(new_PP_per_plot_summary))
 
 # Make Figure 2
 (plot2 <- plot2a + plot2b - plot2c + plot_layout(ncol = 1))
@@ -338,77 +362,6 @@ summary(anova2w)
 # ggsave("figures/1989-2010/Figure2.png", plot2, width = 6, height = 7, dpi = 600)
 # ggsave("figures/1989-2010/Figure2.tiff", plot2,
 #        width = 6, height = 7, dpi = 600, compression = "lzw")
-
-
-### RUN ANOVAS ###
-# Things to deal with:
-#   - which way to summarize the data
-#   - what about after 2010? seems to be washing out treatment and interaction
-
-# 2-way ANOVA by monthly count
-
-# new_PP_per_plot$time_point <- NA
-# 
-# for (i in 1:nrow(new_PP_per_plot)) {
-#   if (new_PP_per_plot$year[i] < 1997) {
-#     new_PP_per_plot$time_point[i] = "Before"
-#   } else if (new_PP_per_plot$year[i] > 1997){
-#     new_PP_per_plot$time_point[i] = "After"
-#   } else {
-#     if (new_PP_per_plot$month[i] < 7){
-#       new_PP_per_plot$time_point[i] = "Before"
-#     } else {
-#       new_PP_per_plot$time_point[i] = "After"
-#     }
-#   }
-# }
-# 
-# new_PP_per_plot <- filter(new_PP_per_plot, year <= 2010)
-# anova2w <- aov(count ~ plot_type * time_point, data = new_PP_per_plot)
-# summary(anova2w)
-# 
-
-
-# 2-way ANOVA by year
-
-# new_PP_per_plot <- new_PP_per_plot %>% 
-#   group_by(year, plot_type) %>% 
-#   summarise(count = sum(count))
-# 
-# new_PP_per_plot$time_point <- NA
-# 
-# for (i in 1:nrow(new_PP_per_plot)) {
-#   if (new_PP_per_plot$year[i] <= 1997) {
-#     new_PP_per_plot$time_point[i] = "Before"
-#   } else {
-#     new_PP_per_plot$time_point[i] = "After"
-#   }
-# }
-# 
-# new_PP_per_plot <- filter(new_PP_per_plot, year <= 2010)
-# anova2w <- aov(count ~ plot_type * time_point, data = new_PP_per_plot)
-# summary(anova2w)
-# 
-# ggplot(data = new_PP_per_plot, aes(x = year, y = count, color = plot_type)) +
-#   geom_point() +
-#   geom_line() +
-#   theme_bw()
-
-# 2-way ANOVA by avg per plot per year
-
-# new_PP_per_plot_summary$time_point <- NA
-# 
-# for (i in 1:nrow(new_PP_per_plot_summary)) {
-#   if (new_PP_per_plot_summary$year[i] <= 1997) {
-#     new_PP_per_plot_summary$time_point[i] = "Before"
-#   } else {
-#     new_PP_per_plot_summary$time_point[i] = "After"
-#   }
-# }
-# 
-# new_PP_per_plot_summary <- filter(new_PP_per_plot_summary, year <= 2010)
-# anova2w <- aov(avg_plot_sum_by_year ~ plot_type * time_point, data = new_PP_per_plot_summary)
-# summary(anova2w)
 
 #############################################################
 # System-level Aspects of Patch Preference
