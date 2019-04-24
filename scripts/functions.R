@@ -779,7 +779,7 @@ plot_new_PP_individuals <- function(data){
   y_axis_title <- expression(atop(paste(italic("C. penicillatus"), " individuals")))
   
   plot <- ggplot(data, aes(x = year,
-                           y = sum_by_year,
+                           y = avg_plot_sum_by_year,
                            color = plot_type,
                            group = plot_type)) +
     annotate(geom = "rect", fill = "grey", alpha = 0.4,
@@ -791,7 +791,7 @@ plot_new_PP_individuals <- function(data){
     scale_color_manual(values = cbbPalette, name = "Plot Type") +
     geom_point(size = 2.5) +
     geom_line() +
-    #geom_errorbar(aes(ymin = ymin, ymax = ymax), width = .5) +
+    geom_errorbar(aes(ymin = ymin, ymax = ymax), width = .5) +
     ylab(y_axis_title) +
     xlab("Year") +
     labs(subtitle = 'c') +
