@@ -177,8 +177,8 @@ y_diff <- diff(y)
 auto.arima(y_diff)
 
 # build and compare models
-PP_PB_model_linear <- gls(y ~ x)
-PP_PB_model_linear_AR1 <- gls(y ~ x, correlation = corAR1(form = ~1))
+PP_PB_model_linear <- gls(y_diff ~ x)
+PP_PB_model_linear_AR1 <- gls(y_diff ~ x, correlation = corAR1(form = ~1))
 anova(PP_PB_model_linear, PP_PB_model_linear_AR1)
 
 #-----------------------------------------------------------
