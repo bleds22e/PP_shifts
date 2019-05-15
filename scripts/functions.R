@@ -573,7 +573,7 @@ plot_PB_timeseries_by_treament <- function(data){
   
 }
 
-plot_PP_regression <- function(data){
+plot_PP_regression <- function(data, model){
   
   # function for plotting C. penicillatus residual abundances
   # against C. baileyi average abundance per plot
@@ -585,7 +585,7 @@ plot_PP_regression <- function(data){
   # plot 1c
   plot <- ggplot(data, aes(x = PB_avg_indiv, y = PP_residuals)) +
     geom_hline(aes(yintercept = 0), color = 'dark gray') +
-    geom_smooth(aes(y = fitted(PP_PB_model_linear_AR1)),  size = 1, color = "black") +
+    geom_smooth(aes(y = fitted(model)),  size = 1, color = "black") +
     geom_point(size = 2) +
     xlab(x_axis_title) +
     ylab(y_axis_title) +
