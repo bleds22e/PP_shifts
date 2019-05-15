@@ -171,7 +171,8 @@ x = PP_PB_join$PB_avg_indiv
 y = PP_PB_join$PP_residuals
 
 # test for autoregressive structure
-auto.arima(y)
+acf(x)
+acf(y)
 
 # build and compare models
 PP_PB_model_linear <- gls(y ~ x)
@@ -198,7 +199,7 @@ PP_and_PB_fulljoin[is.na(PP_and_PB_fulljoin)] <- 0 # to line up PB abundance for
 (plot1b <- plot_PP_residuals_timeseries(PP_and_PB_fulljoin))
 
 # plot the regression (using original model)
-(plot1c <- plot_PP_regression(PP_PB_join))
+(plot1c <- plot_PP_regression(PP_PB_join, PP_PB_model_linear_AR1))
 
 # use `patchwork` to put them together into one figure
 (plot1 <- (plot1a/plot1b) | plot1c)
