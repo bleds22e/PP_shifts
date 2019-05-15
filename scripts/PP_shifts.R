@@ -1,6 +1,6 @@
 # PP Shifts Paper
-# Ellen K. Bledsoe, with code from S. Supp
-# March 7, 2018
+# Ellen K. Bledsoe
+# May 2019
 
 # LIBRARIES and SOURCE CODE #
 
@@ -395,28 +395,8 @@ for (i in 1:nrow(energy_dat)){
 }
 
 #------------------------------------------------------------
-# Biomass Ratios
+# Energy Ratios
 #------------------------------------------------------------
-
-# sum across rows and rename column
-biomass_dat_rowSums <- as.data.frame(rowSums(biomass_dat[,4:24]))
-colnames(biomass_dat_rowSums) <- c("rowSums")
-
-# summarise biomass to get total by period and plot type
-biomass_total <- cbind(biomass_dat, biomass_dat_rowSums) %>%
-  group_by(year, treatment) %>%
-  summarise(totals = sum(rowSums))
-
-# change the data structure to run the linear model
-biomass_spread <- tidyr::spread(biomass_total, treatment, totals)
-
-# ratio
-biomass_ratio <- biomass_spread %>% mutate(EX_to_CO_ratio = exclosure/control)
-
-(plot3 <- plot_biomass_ratio(biomass_ratio))
-# ggsave("figures/1989-2010/Figure3.png", plot3, width = 3.5, height = 3, dpi = 600)
-
-## ENERGY ##
 
 # sum across rows and rename column
 energy_dat_rowSums <- as.data.frame(rowSums(energy_dat[,4:24]))
