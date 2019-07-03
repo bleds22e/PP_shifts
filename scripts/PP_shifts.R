@@ -408,7 +408,8 @@ energy_total <- cbind(energy_dat, energy_dat_rowSums) %>%
   summarise(totals = sum(rowSums))
 
 # change the data structure to run the linear model
-energy_spread <- tidyr::spread(energy_total, treatment, totals)
+energy_spread <- tidyr::spread(energy_total, treatment, totals) %>% 
+  filter(year <= 2010)
 
 # ratio
 energy_ratio <- energy_spread %>% mutate(EX_to_CO_ratio = exclosure/control)
