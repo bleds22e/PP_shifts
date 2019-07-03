@@ -1,13 +1,14 @@
 # Functions for the Manuscript
 # Ellen K. Bledsoe
 
-### LIBRARIES ###
+### LIBRARIES ### ==============================================================
 
 library(tidyverse)
-cbbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+cbbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", 
+                "#0072B2", "#D55E00", "#CC79A7")
 
 
-### DATA FUNCTIONS ###
+### DATA FUNCTIONS ### =========================================================
 
 repo_data_to_Supp_data <- function(data, species_data){
   
@@ -238,6 +239,7 @@ is_dead <- function(dat, tags, spp_col, tag_col) {
 
 
 is_duplicate_tag <- function(dat, tags, spp_col, tag_col) {
+  
   # used in 'clean_data_for_capture_histories' function
   # check the min to max year for a given tag.
   # If > 4, considered suspicious
@@ -325,7 +327,7 @@ is_duplicate_tag <- function(dat, tags, spp_col, tag_col) {
 same_period <- function(dat, tags){
   
   # used in 'clean_data_for_capture_histories' function
-  # multiple individuals with same tag captured in same period? Questionable data
+  # multiple individuals with same tag captured in same period = questionable
   
   flagged_rats = data.frame("tag"=1, "reason"=1, "occurrences"=1)
   outcount = 0
@@ -354,7 +356,8 @@ same_period <- function(dat, tags){
 find_bad_data2 <- function(dat, tags, sex_col, spp_col) {
   
   # used in 'subsetDat' function
-  # check for consistent sex and species, outputs flagged tags to check, or to remove from study
+  # check for consistent sex and species, outputs flagged tags to check, 
+  #     or to remove from study
   
   flagged_rats = data.frame("tag" = 1,
                             "reason" = 1,
@@ -395,11 +398,13 @@ subsetDat <- function(dataset){
   flags = find_bad_data2(dataset, tags, 10, 9)   # list of flagged data
   
   # first, mark all uncertain or unmarked sex as "U" for unknown
-  dataset[which(dataset$sex %in% c("", "P", "Z")),10] = "U" # get rid of other weird typos in sex column
+  #     and get rid of other weird typos in sex column
+  dataset[which(dataset$sex %in% c("", "P", "Z")), 10] = "U" 
   
   # get rid of results where we don't know the species for sure
   badspptags = unique(flags[which(flags$reason == "spp"), 1])    
-  dataset = dataset[-which(dataset$tag %in% badspptags),] # delete rows where species is unsure
+  dataset = dataset[-which(dataset$tag %in% badspptags),] 
+    # delete rows where species is unsure
 
   return (dataset)
   
@@ -415,7 +420,8 @@ clean_data_for_capture_histories <- function(data){
   data$species = as.character(data$species)
   data$sex = as.character(data$sex)
   
-  # subset data where species are known (e.g., no "unidentified rodents" or genus-only)
+  # subset data where species are known 
+  #   (e.g., no "unidentified rodents" or genus-only)
   data2 = subset(data, species!="DX" & species!="UR" & species!="RX" & species!="SX" & species!="PX" & species != "OX")
   
   # give untagged individuals a unique 7-number code
@@ -423,28 +429,31 @@ clean_data_for_capture_histories <- function(data){
   
   # make sure when note2 == "*" it is counted as a new tag
   # necessary if using data data (ear and toe tags)
-  # returns the dataset with new IDs for checking for duplicate tags that occur over a suspiciously long time period
+  # returns the dataset with new IDs for checking for duplicate tags 
+  #     that occur over a suspiciously long time period
   tags = unique(data2$tag)
   data3 = starred_tags(data2, tags, 9, 16)
   
-  #check for dead individuals, give data with same tag after marked dead a new unique ID
+  # check for dead individuals 
+  # give data with same tag after marked dead a new unique ID
   tags = unique(data3$tag)
   data4 = is_dead(data3, tags, 9, 16)
   
-  # check for individuals with same tag, but captured over long timespan (may be able to separate them) 
+  # check for individuals with same tag, but captured over long timespan 
   # necessary if using data data (ear and toe tags)
-  # returns the dataset with new IDs for those that can easily be sorted out based on sex and year
+  # returns the dataset with new IDs for those that can easily be sorted 
   tags = unique(data4$tag)
-  dups = is_duplicate_tag(data4, tags, 9, 16) #check to see if can separate tags based
+  dups = is_duplicate_tag(data4, tags, 9, 16) 
   
-  #eliminate bad data based on tags identified in dups$bad
+  # eliminate bad data based on tags identified in dups$bad
   duptags = unique(dups$bad$tag)
-  data5 = dups$data[-which(dups$data$tag %in% duptags),] #delete rows flagged as duplicates without clear resolution
+  data5 = dups$data[-which(dups$data$tag %in% duptags),] 
+    # delete rows flagged as duplicates without clear resolution
   
   tags = unique(data5$tag)
   same = same_period(data5, tags)
   
-  #eliminate tags that appear more than once in the same period - questionable data
+  # eliminate tags that appear more than once in the same period
   sametags = unique(same$tag)
   data6 = data5[-which(data5$tag %in% sametags),]
   
@@ -464,7 +473,7 @@ create_trmt_hist = function(dat, tags, prd) {
   
   for (t in 1:length(tags)) {
     
-    capture_history = "" #create empty string
+    capture_history = "" # create empty string
     
     for (p in 1:length(prd)) {
       
@@ -528,9 +537,9 @@ run.ms <- function(S_dot = list(formula = ~ 1),
   Psi.s = Psi_s
   
   # Create model list and run assortment of models
-  ms.model.list = create.model.list("Multistrata")
+  ms.model.list <- create.model.list("Multistrata")
   
-  ms.results = mark.wrapper(ms.model.list,
+  ms.results <- mark.wrapper(ms.model.list,
                             data = ms.pr, ddl = ms.ddl,
                             options="SIMANNEAL")
   
@@ -540,14 +549,13 @@ run.ms <- function(S_dot = list(formula = ~ 1),
 }
 
 
-
-### PLOTTING FUNCTIONS ###
+### PLOTTING FUNCTIONS ### =====================================================
 
 plot_PB_timeseries_by_treament <- function(data){
   
   # function for plotting C. baileyi avg. abundance per plot
   # through the time series by plot treatment type
-  # Figure S1
+  # Figure S4
   
   y_axis_title <- expression(atop(paste(italic("C. baileyi"), " individuals"),
                                   "(average per plot)"))
@@ -577,7 +585,7 @@ plot_PP_regression <- function(data, model){
   
   # function for plotting C. penicillatus residual abundances
   # against C. baileyi average abundance per plot
-  # Figure 1c
+  # Figure 1c and Figure S1c
   
   x_axis_title <- expression(paste(italic("C. baileyi"), " individuals (average per plot)"))
   y_axis_title <- expression(paste(italic("C. penicillatus"), " residual abundance"))
@@ -608,7 +616,7 @@ plot_PP_regression <- function(data, model){
 plot_PB_timeseries <- function(data){
   
   # function for plotting C. baileyi average abundance per plot
-  # Figure 1a
+  # Figure 1a and Figure S1a
   
   y_axis_title <- expression(atop(paste(italic("C. baileyi"), " individuals"),
                                   "(average per plot)"))
@@ -644,7 +652,7 @@ plot_PP_residuals_timeseries <- function(data){
   
   # function for plotting C. penicillatus residual
   # abundances through time
-  # Figure 1b
+  # Figure 1b and Figure S1b
   
   y_axis_title <- expression(atop("Residual abundance"),
                              phantom('W'))
@@ -709,6 +717,7 @@ prep_RMark_data_for_plotting <- function(data){
 plot_estimated_survival <- function(data){
   
   # plot estimated survival metrics from RMark
+  # Figure 2a and Figure S2a
   
   x_axis_title <- expression(paste(italic("C. baileyi"), " establishment"))
   
@@ -719,11 +728,11 @@ plot_estimated_survival <- function(data){
                     position = position_dodge(.1), size = .75) +
     scale_colour_manual(values = cbbPalette) + 
     xlab(x_axis_title) +
-    ylab("Estimated survival") + 
+    ylab("Residency") + 
     labs(subtitle = 'a') +
     theme_classic() +
     theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
-          plot.subtitle = element_text(size = 14, hjust = -.4),
+          plot.subtitle = element_text(size = 14, hjust = -.35, vjust = -.5),
           axis.line = element_line(size = .25),
           axis.title.x = element_text(size = 12, margin = margin(t = 10)),
           axis.title.y = element_text(size = 12, margin = margin(r = 10)),
@@ -741,6 +750,7 @@ plot_estimated_survival <- function(data){
 plot_transition_probability <- function(data){
   
   # plot transition probability  metrics from RMark
+  # Figure 2b and Figure S2b
   
   x_axis_title <- expression(paste(italic("C. baileyi"), " establishment"))
   
@@ -756,7 +766,7 @@ plot_transition_probability <- function(data){
     labs(subtitle = 'b') +
     theme_classic() +
     theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
-          plot.subtitle = element_text(size = 14, hjust = -.35),
+          plot.subtitle = element_text(size = 14, hjust = -.35, vjust = -.5),
           axis.line = element_line(size = .25),
           axis.title.x = element_text(size = 12, margin = margin(t = 10)),
           axis.title.y = element_text(size = 12, margin = margin(r = 10)),
@@ -772,6 +782,9 @@ plot_transition_probability <- function(data){
 
 
 plot_new_PP_individuals <- function(data){
+  
+  # plot number of new (i.e., untagged) PP individuals per year by treatment
+  # Figure 2c and Figure S2c
   
   # rename plot_treatments for plotting
   data$plot_type <- plyr::revalue(data$plot_type, c("Krat_Exclosure" = "KR Exclosure"))
@@ -798,9 +811,9 @@ plot_new_PP_individuals <- function(data){
     #guides(color = guide_legend(override.aes = list(size = 3))) +
     theme_classic() +
     theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
-          plot.subtitle = element_text(size = 14, hjust = -.15), 
+          plot.subtitle = element_text(size = 14, hjust = -.14, vjust = -.5), 
           axis.title.x = element_text(size = 12, margin = margin(t = 10)),
-          axis.title.y = element_text(size = 12, margin = margin(r = 10)),
+          axis.title.y = element_text(size = 12, margin = margin(r = -10)),
           axis.text.x = element_text(size = 10),
           axis.text.y = element_text(size = 10),
           legend.position = "top", 
@@ -812,39 +825,10 @@ plot_new_PP_individuals <- function(data){
 }
 
 
-plot_biomass_ratio <- function(data){
-  
-  # function for plotting KR exclosure:control ratio
-  
-  y_axis_title <- expression(atop("Biomass ratio",
-                                  "(kangaroo rat exclosure:control)"))
-  
-  plot <- ggplot(data, aes(year, EX_to_CO_ratio, group = 1)) +
-    annotate(geom = "rect", fill = "grey", alpha = 0.4,
-             xmin = 1995, xmax = 1998,
-             ymin = -Inf, ymax = Inf) +
-    annotate(geom = "rect", fill = "grey", alpha = 0.4,
-             xmin = 2008, xmax = 2010, 
-             ymin = -Inf, ymax = Inf) +
-    geom_point(size = 2) +
-    geom_line() +
-    ylab(y_axis_title) +
-    xlab("Year") + 
-    theme_classic() +
-    theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
-          axis.title.x = element_text(size = 10, margin = margin(t = 10)),
-          axis.title.y = element_text(size = 10, margin = margin(r = 10)),
-          axis.text.x = element_text(size = 8),
-          axis.text.y = element_text(size = 8),
-          plot.margin = margin(10, 15, 10, 10))
-  
-  return(plot)
-  
-}
-
 plot_energy_ratio <- function(data){
   
-  # function for plotting KR exclosure:control ratio
+  # function for plotting KR exclosure:control energy ratio
+  # Figure 3 & Figure S3
   
   y_axis_title <- expression(atop("Energy ratio",
                                   "(kangaroo rat exclosure:control)"))
@@ -867,6 +851,51 @@ plot_energy_ratio <- function(data){
           axis.text.x = element_text(size = 8),
           axis.text.y = element_text(size = 8),
           plot.margin = margin(10, 15, 10, 10))
+  
+  return(plot)
+  
+}
+
+
+plot_avg_competitors <- function(data){
+  
+  # function for plotting avg of total competitors per treatment
+  # Figure S5
+  
+  # rename plot_treatments for plotting
+  data$plot_type <- plyr::revalue(data$plot_type, 
+                                  c("Krat_Exclosure" = "KR Exclosure"))
+  
+  y_axis_title <- expression(atop("Total competitors"),
+                             "(average per plot)")
+  
+  plot <- ggplot(data, aes(x = year,
+                           y = avg_plot_sum_by_year,
+                           color = plot_type,
+                           group = plot_type)) +
+    annotate(geom = "rect", fill = "grey", alpha = 0.4,
+             xmin = 1995, xmax = 1998,
+             ymin = -Inf, ymax = Inf) +
+    annotate(geom = "rect", fill = "grey", alpha = 0.4,
+             xmin = 2008, xmax = 2010,
+             ymin = -Inf, ymax = Inf) +
+    scale_color_manual(values = cbbPalette, name = "Plot Type") +
+    geom_point(size = 2.5) +
+    geom_line() +
+    geom_errorbar(aes(ymin = ymin, ymax = ymax), width = .5) +
+    ylab(y_axis_title) +
+    xlab("Year") +
+    labs(subtitle = 'c') +
+    theme_classic() +
+    theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
+          plot.subtitle = element_text(size = 14, hjust = -.14, vjust = -.5), 
+          axis.title.x = element_text(size = 12, margin = margin(t = 10)),
+          axis.title.y = element_text(size = 12, margin = margin(r = -10)),
+          axis.text.x = element_text(size = 10),
+          axis.text.y = element_text(size = 10),
+          legend.position = "top", 
+          legend.title = element_blank(),
+          plot.margin = margin(r = 10, t = 15))
   
   return(plot)
   
