@@ -367,36 +367,12 @@ new_PP_per_plot_summary <- new_PP_per_plot_summary %>%
 #############################################################
 
 # download biomass data by plot from portalr
-biomass_data <- portalr::biomass(path = "repo", level = "Plot")
 energy_data <- portalr::energy(path = "repo", level = "Plot")
 
 # select certain treatments and filter by time
-biomass_dat <- biomass_data %>%
-  filter(treatment == "control" | treatment == "exclosure", 
-         period >= 118 & period <= 433) # get the right time periods
 energy_dat <- energy_data %>%
   filter(treatment == "control" | treatment == "exclosure", 
          period >= 118 & period <= 433) 
-
-
-# add a year column for later summarization
-year_prd_pairs <- unique(tdat[,c("year", "period")]) # get associated years and periods
-biomass_dat$year = NA
-energy_dat$year = NA
-
-for (i in 1:nrow(biomass_dat)){
-  prd <- biomass_dat$period[i]
-  biomass_dat$year[i] = year_prd_pairs$year[year_prd_pairs$period == prd]
-}
-
-for (i in 1:nrow(energy_dat)){
-  prd <- energy_dat$period[i]
-  energy_dat$year[i] = year_prd_pairs$year[year_prd_pairs$period == prd]
-}
-
-#------------------------------------------------------------
-# Energy Ratios
-#------------------------------------------------------------
 
 # sum across rows and rename column
 energy_dat_rowSums <- as.data.frame(rowSums(energy_dat[,4:24]))
@@ -416,3 +392,56 @@ energy_ratio <- energy_spread %>% mutate(EX_to_CO_ratio = exclosure/control)
 
 (plot3_energy <- plot_energy_ratio(energy_ratio))
 # ggsave("figures/1989-2010/Figure3_energy.png", plot3_energy, width = 3.5, height = 3, dpi = 600)
+
+#############################################################
+# Check for density-dependent habitat seleciton 
+#############################################################
+
+PB_Dipos <- all %>% 
+  filter(species %in% c('PB', 'DM', 'DO', 'DS'))
+
+# total number competitors (avg plot sum by year)
+PB_Dipo_per_plot <- PB_Dipos %>%
+  filter(plot_type != "Removal") %>% 
+  group_by(plot, month, year, plot_type) %>%
+  summarise(count = n(species)) %>%
+  ungroup()
+PB_Dipo_per_plot <- PB_Dipo_per_plot %>%
+  group_by(year, plot_type, plot) %>% 
+  summarise(count = sum(count)) %>% 
+  ungroup()
+
+# put zeros where they belong
+PB_Dipo_per_plot <- full_join(all_plots_all_years, PB_Dipo_per_plot) %>%
+  filter(plot_type != "Removal")
+PB_Dipo_per_plot$count[is.na(PB_Dipo_per_plot$count)] <- 0
+
+PB_Dipo_per_plot$time_point <- NA
+
+# add PB time point
+for (i in 1:nrow(PB_Dipo_per_plot)) {
+  if (PB_Dipo_per_plot$year[i] <= 1997) {
+    PB_Dipo_per_plot$time_point[i] = "Before"
+  } else {
+    PB_Dipo_per_plot$time_point[i] = "After"
+  }
+}
+
+# get means and SE
+competitor_summary <- PB_Dipo_per_plot %>% 
+  group_by(year, plot_type) %>% 
+  summarise(avg_plot_sum_by_year = mean(count), se = plotrix::std.error(count))
+
+competitor_summary <- competitor_summary %>%
+  mutate(ymin = avg_plot_sum_by_year - se,
+         ymax = avg_plot_sum_by_year + se) 
+
+# plot results
+(total_competitors <- plot_avg_competitors(competitor_summary))
+#ggsave("figures/1989-2010/FigureS5.png", total_competitors, width = 6, height = 3, dpi = 600)
+
+# run mixed model on just the "after PB" data
+after_PB <- PB_Dipo_per_plot %>% filter(year > 1997)
+
+results.lme <- lme(count ~ plot_type, random = list(~ 1 | year, ~ 1 | plot), data = after_PB)
+anova(results.lme)
