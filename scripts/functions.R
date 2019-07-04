@@ -866,8 +866,8 @@ plot_avg_competitors <- function(data){
   data$plot_type <- plyr::revalue(data$plot_type, 
                                   c("Krat_Exclosure" = "KR Exclosure"))
   
-  y_axis_title <- expression(atop("Total competitors"),
-                             "(average per plot)")
+  y_axis_title <- expression(atop("Total competitors",
+                             "(mean per plot)"))
   
   plot <- ggplot(data, aes(x = year,
                            y = avg_plot_sum_by_year,
@@ -885,17 +885,16 @@ plot_avg_competitors <- function(data){
     geom_errorbar(aes(ymin = ymin, ymax = ymax), width = .5) +
     ylab(y_axis_title) +
     xlab("Year") +
-    labs(subtitle = 'c') +
     theme_classic() +
     theme(panel.border = element_rect(fill = NA, colour = "black", size = 1.25),
           plot.subtitle = element_text(size = 14, hjust = -.14, vjust = -.5), 
           axis.title.x = element_text(size = 12, margin = margin(t = 10)),
-          axis.title.y = element_text(size = 12, margin = margin(r = -10)),
+          axis.title.y = element_text(size = 12, margin = margin(r = 5)),
           axis.text.x = element_text(size = 10),
           axis.text.y = element_text(size = 10),
           legend.position = "top", 
           legend.title = element_blank(),
-          plot.margin = margin(r = 10, t = 15))
+          plot.margin = margin(r = 10, l = 5))
   
   return(plot)
   
