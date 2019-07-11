@@ -127,8 +127,8 @@ PB_only <- filter(avg_by_year_plotting, species == "PB", year > 1994)
 
 (plot_supp1 <- plot_PB_timeseries_by_treament(PB_only))
 
-# ggsave("figures/1989-2010/FigureS1.png", plot_supp1, height = 3, width = 6, dpi = 600)
-# ggsave("figures/1989-2010/FigureS1.tiff", plot_supp1,
+# ggsave("figures/1989-2014/FigureS1.png", plot_supp1, height = 3, width = 6, dpi = 600)
+# ggsave("figures/1989-2014/FigureS1.tiff", plot_supp1,
 #        height = 3, width = 6, dpi = 600, compression = "lzw")
 
 #-----------------------------------------------------------

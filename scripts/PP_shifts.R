@@ -438,7 +438,7 @@ competitor_summary <- competitor_summary %>%
 
 # plot results
 (total_competitors <- plot_avg_competitors(competitor_summary))
-#ggsave("figures/1989-2010/FigureS5.png", total_competitors, width = 6, height = 3, dpi = 600)
+# ggsave("figures/1989-2010/FigureS5.png", total_competitors, width = 6, height = 3, dpi = 600)
 
 # run mixed model on just the "after PB" data
 after_PB <- PB_Dipo_per_plot %>% filter(year > 1997)
