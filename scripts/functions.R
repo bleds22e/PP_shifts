@@ -558,7 +558,7 @@ plot_PB_timeseries_by_treament <- function(data){
   # Figure S4
   
   y_axis_title <- expression(atop(paste(italic("C. baileyi"), " individuals"),
-                                  "(average per plot)"))
+                                  "(mean per plot)"))
   
   plot <- ggplot(data, aes(x = year, y = avg_ind_per_prd, color = plot_type, group = plot_type)) +
       geom_line(size = 1) +
@@ -587,7 +587,7 @@ plot_PP_regression <- function(data, model){
   # against C. baileyi average abundance per plot
   # Figure 1c and Figure S1c
   
-  x_axis_title <- expression(paste(italic("C. baileyi"), " individuals (average per plot)"))
+  x_axis_title <- expression(paste(italic("C. baileyi"), " individuals (mean per plot)"))
   y_axis_title <- expression(paste(italic("C. penicillatus"), " residual abundance"))
   
   # plot 1c
@@ -619,7 +619,7 @@ plot_PB_timeseries <- function(data){
   # Figure 1a and Figure S1a
   
   y_axis_title <- expression(atop(paste(italic("C. baileyi"), " individuals"),
-                                  "(average per plot)"))
+                                  "(mean per plot)"))
   
   plot <- ggplot(data, aes(x = year, y = PB_avg_indiv)) +
     annotate(geom = "rect", fill = "grey", alpha = 0.4,
