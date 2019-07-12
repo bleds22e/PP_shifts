@@ -395,6 +395,10 @@ for (i in 1:nrow(energy_dat)){
 energy_dat_rowSums <- as.data.frame(rowSums(energy_dat[,4:24]))
 colnames(energy_dat_rowSums) <- c("rowSums")
 
+# get periods and associated years
+years_and_periods <- unique(all[,c("year", "period")])
+energy_dat <- left_join(energy_dat, years_and_periods)
+
 # summarise energy to get total by period and plot type
 energy_total <- cbind(energy_dat, energy_dat_rowSums) %>%
   group_by(year, treatment) %>%

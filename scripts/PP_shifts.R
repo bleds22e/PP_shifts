@@ -374,6 +374,10 @@ energy_dat <- energy_data %>%
   filter(treatment == "control" | treatment == "exclosure", 
          period >= 118 & period <= 433) 
 
+# get periods and associated years
+years_and_periods <- unique(all[,c("year", "period")])
+energy_dat <- left_join(energy_dat, years_and_periods)
+
 # sum across rows and rename column
 energy_dat_rowSums <- as.data.frame(rowSums(energy_dat[,4:24]))
 colnames(energy_dat_rowSums) <- c("rowSums")
