@@ -1,9 +1,9 @@
 # PP Shifts
-## "Temporal changes in species composition affect a ubiquitous species' views of patch quality"
+## Temporal changes in species composition affect a ubiquitous species' use of habitat patches
 
-This repo contains analyses for my project on how _C. penicillatus's_ perception of patch quality has changed through time in response to the colonization of _C. baileyi_ at The Protal Project.
+This repo contains analyses for my project on how _C. penicillatus's_ use of habitat patches has changed through time in response to the colonization of _C. baileyi_ at The Protal Project.
 
-The manuscript for this project is currently under review at Ecology.
+The manuscript for this project is currently in press at Ecology.
 
 
 ### Manuscript Analysis
@@ -11,8 +11,8 @@ The manuscript for this project is currently under review at Ecology.
 To conduct the analyses in the manuscript, you'll need the two scripts in the "scripts" folder:
 
   * _scripts/PP_shifts.R_: contains all the analyses and figures in the paper
-    * You can technically source this code, and it should run smoothly, assuming all packages are installed
-    * **HOWEVER!**--this includes running some extensive models in RMark, which will take a long time (see _Tip #3_ below)
+    * You should be able to source this code and have it should run smoothly, assuming all packages are installed
+    * As written, revelant results files are imported in; to run the original RMark analysis, see _Tip #3_ below
   * _scripts/functions.R_: contains all functions used in the PP_shifts.R script
     * sourced in the PP_shifts.R script
     * includes both data-focused functions and plotting functions
@@ -34,24 +34,25 @@ devtools::install_github("thomasp85/patchwork")
 
 In addition to calling in relevant libraries, source code, and data, the script has the following three sections:
 
-* Patch Preference of _C. penicillatus_ in Response to _C. baileyi_ Abundance [line 77]
-* _C. penicillatus_ Population-level Metrics and RMark [line 200]
-* System-level Aspects of Patch Preference [line 335]
+* Patch Preference of _C. penicillatus_ in Response to _C. baileyi_ Abundance [line 83]
+* _C. penicillatus_ Population-level Metrics and RMark [line 211]
+* System-level Aspects of Patch Preference [line 367]
 
 #### 3) Choose whether you want to run the RMark analyses yourself or not
 
-If you choose to run the entire script in its current state, it will run all of the RMark analyses from scratch. This will likely take a couple hours and potentially crash your computer.
+If you choose to run the entire script in its current state, it will NOT run all of the RMark analyses from scratch. Instead, it will import the necessary results files to complete the analyses.
 
-To avoid this, you can load in the data from the latest run of the model. If you would prefer to do this, you can skip lines 216-280 and run line 283 instead. There are also warnings and directions about this in the script itself.
+The code to run the original RMark files can be found in the main analysis file, but these lines of code are commented out. If you would prefer to run the original code, you just need to remove the pound sign from those lines and comment out the lines of code that read in the results. To run the original RMark code, you will need to have MARK downloaded on your machine; running code will likely take a couple hours and potentially crash your computer.
 
+See lines 226-235 and lines 247-256 in the _scripts/PP_shifts.R_ file for more information
 
 ### Other Files in the Repo
 
   * _data/_
-    * _all_model_results_20180712.csv_ output from all models from the latest RMark run
-    * _PP_capture_history_all_20180711.csv_ results from `create_trmt_hist()`
+    * _all_model_results_20180712.csv_ output from all models from the latest RMark run 
+    * _PP_capture_history_all_20180711.csv_ results from `create_trmt_hist()`(line 240)
     * _test_data_prepared.csv_ test data for `testthat` functions
-    * _top_model_summary_20180712.csv_ output from top model from latest RMark run   
+    * _top_model_summary_20190416.csv_ output from top model from latest RMark run (line 294)  
   * _figures/_ 
     * manuscript figures
   * _testthat/_ 
