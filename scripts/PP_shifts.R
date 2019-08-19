@@ -224,13 +224,13 @@ tags_all = unique(PP_only$tag)
 periods_all = seq(min(PP_only$period), max(PP_only$period))
 
 #################################################################################
-### Warning: this will take a long time to run and maybe crash your computer! ###
+### Warning: the code that is commented out below might crash your computer!  ###
 #################################################################################
 #                                                                               #
-#       The `create_trmt_hist` function to create mark_trmt_all will            #
-#       take a long time to run. If you don't want to run it, you can           #
-#       read in the results from the GitHub repo (line 233-4) and then          #
-#       run the RMark code -OR- skip to line 286 for all RMark results          #
+#       The `create_trmt_hist` function to create mark_trmt_all (line 237)      #
+#       takes a long time to run. If you don't want to run it, you can          #
+#       read in the results from the GitHub repo (lines 240-1) and then         #
+#       run the RMark code -OR- skip to line 294 for all RMark results          #
 #                                                                               #
 #################################################################################
 
@@ -243,6 +243,17 @@ mark_trmt_all <- read.csv(text = all_hist, header = TRUE, stringsAsFactors = FAL
 # prep data for RMark
 all_ms <- select(mark_trmt_all, captures) %>% dplyr::rename("ch" = "captures")
 first_PP <- min(PP_only$period)
+
+#################################################################################
+### Warning: the code that is commented out below might crash your computer!  ###
+#################################################################################
+#                                                                               #
+#       Running the `run.ms` function to get ms.results will take a             #
+#       long time to run. If you don't want to run this yourself, you           #
+#       can skip all of the code below that is commented out and instead        #
+#       read in the RMark results from GitHub (line 294)                        #
+#                                                                               #
+#################################################################################
 
 # # Process data
 # ms.pr = process.data(all_ms, begin.time = first_PP, model = "Multistrata")
@@ -263,16 +274,6 @@ first_PP <- min(PP_only$period)
 # ms.ddl$Psi$PB_time[ms.ddl$Psi$time %in% PB_time_after] = 1
 
 # Run the models and examine the output
-
-#################################################################################
-### Warning: this will take a long time to run and maybe crash your computer! ###
-#################################################################################
-#                                                                               #
-#       Running the `run.ms` function to get ms.results will take a             #
-#       long time to run. If you don't want to run this yourself, you           #
-#       can read in the RMark results from GitHub instead (line 286)            #
-#                                                                               #
-#################################################################################
 
 # MarkViewer="open -a TextEdit" # edit to make results pop up on a Mac
 
