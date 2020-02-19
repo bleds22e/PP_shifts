@@ -13,6 +13,7 @@ library(forecast)
 library(nlme)
 library(patchwork) # devtools::install_github("thomasp85/patchwork")
 library(rapportools)
+library(plotrix)
 
 source("scripts/functions.r")
 
@@ -98,7 +99,7 @@ avg_by_year <- # count of individuals in each plot
   no_removals %>% 
   filter(species == 'PP' | species == 'PB') %>%
   group_by(plot, year, species, plot_type) %>%
-  summarise(count = n(species)) %>%
+  summarise(count = n()) %>%
   ungroup()
 
 all_plots_all_years_PP_PB <- all_plots_all_years %>%
